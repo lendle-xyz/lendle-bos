@@ -19,6 +19,9 @@ const MATIC_TOKEN = { name: "Matic", symbol: "MATIC", decimals: 18 };
 const WMATIC_TOKEN = { name: "Wrapped Matic", symbol: "WMATIC", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
 
+const GRAPHQL_URL =
+  "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
+
 // Get AAVE network config by chain id
 function getNetworkConfig(chainId) {
   const abis = {
@@ -37,19 +40,6 @@ function getNetworkConfig(chainId) {
   };
 
   switch (chainId) {
-    case 1: // ethereum mainnet
-      return {
-        chainName: "Ethereum Mainnet",
-        nativeCurrency: ETH_TOKEN,
-        nativeWrapCurrency: WETH_TOKEN,
-        rpcUrl: "https://rpc.ankr.com/eth",
-        aavePoolV3Address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
-        wrappedTokenGatewayV3Address:
-          "0xD322A49006FC828F9B5B37Ab215F99B4E5caB19C",
-        balanceProviderAddress: "0xC7be5307ba715ce89b152f3Df0658295b3dbA8E2",
-        ...abis,
-        ...constants,
-      };
     case 5000: // Mantle mainnet
       return {
         chainName: "Mantle Mainnet",
@@ -59,46 +49,7 @@ function getNetworkConfig(chainId) {
         aavePoolV3Address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
         wrappedTokenGatewayV3Address:
           "0xD322A49006FC828F9B5B37Ab215F99B4E5caB19C",
-        balanceProviderAddress: "0xC7be5307ba715ce89b152f3Df0658295b3dbA8E2",
-        ...abis,
-        ...constants,
-      };
-    case 42161: // arbitrum one
-      return {
-        chainName: "Arbitrum Mainnet",
-        nativeCurrency: ETH_TOKEN,
-        nativeWrapCurrency: WETH_TOKEN,
-        rpcUrl: "https://arb1.arbitrum.io/rpc",
-        aavePoolV3Address: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
-        wrappedTokenGatewayV3Address:
-          "0xB5Ee21786D28c5Ba61661550879475976B707099",
-        balanceProviderAddress: "0xBc790382B3686abffE4be14A030A96aC6154023a",
-        ...abis,
-        ...constants,
-      };
-    case 137: // polygon mainnet
-      return {
-        chainName: "Polygon Mainnet",
-        nativeCurrency: MATIC_TOKEN,
-        nativeWrapCurrency: WMATIC_TOKEN,
-        rpcUrl: "https://rpc.ankr.com/polygon",
-        aavePoolV3Address: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
-        wrappedTokenGatewayV3Address:
-          "0x1e4b7A6b903680eab0c5dAbcb8fD429cD2a9598c",
-        balanceProviderAddress: "0xBc790382B3686abffE4be14A030A96aC6154023a",
-        ...abis,
-        ...constants,
-      };
-    case 1442: // zkevm testnet
-      return {
-        chainName: "Polygon zkEVM Testnet",
-        nativeCurrency: ETH_TOKEN,
-        nativeWrapCurrency: WETH_TOKEN,
-        rpcUrl: "https://rpc.public.zkevm-test.net",
-        aavePoolV3Address: "0x4412c92f6579D9FC542D108382c8D1d6D2Be63d9",
-        wrappedTokenGatewayV3Address:
-          "0xD82940E16D25aB1349914e1C369eF1b287d457BF",
-        balanceProviderAddress: "0x0da6DCAd2bE4801b644AEE679e0AdE008bB4bc6b",
+        balanceProviderAddress: "0x370bc6B2940A6927fFf2D64BA3D96C641579a01e",
         ...abis,
         ...constants,
       };
@@ -316,7 +267,65 @@ function repayERC20Gas() {
 // }
 // returns Market[]
 function getMarkets(chainId) {
-  return asyncFetch(`${config.AAVE_API_BASE_URL}/${chainId}/markets`);
+  const query = `
+  query MarketsDataQuery {
+    markets {
+      totalValueLockedUSD
+      totalDepositBalanceUSD
+      totalBorrowBalanceUSD
+      maximumLTV
+      liquidationThreshold
+      liquidationPenalty
+      canUseAsCollateral
+      name
+      canBorrowFrom
+      cumulativeProtocolSideRevenueUSD
+      cumulativeSupplySideRevenueUSD
+      cumulativeTotalRevenueUSD
+      rewardTokenEmissionsAmount
+      rewardTokenEmissionsUSD
+      id
+      _lastRewardsUpdated
+      _liquidityIndex
+      _prePauseState
+      closedPositionCount
+      isActive
+      outputTokenPriceUSD
+      inputTokenPriceUSD
+      rates {
+        rate
+        side
+        type
+      }
+      totalAllocPoint
+      supplyAllocPoint
+      borrowAllocPoint
+    }
+  }
+  `;
+
+  return asyncFetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  }).then((res) => {
+    const markets = res.body.data.markets;
+    const mappedMarkets = markets.map((market) => ({
+      underlyingAsset: market.id,
+      name: market.name,
+      symbol: market.name,
+      decimals: 18,
+      supplyAPY: market.rates.find((rate) => rate.type === "supply").rate,
+      marketReferencePriceInUsd: market.outputTokenPriceUSD,
+      usageAsCollateralEnabled: market.canUseAsCollateral,
+      aTokenAddress: market.id,
+      variableBorrowAPY: market.rates.find((rate) => rate.type === "variable")
+        .rate,
+    }));
+    return {
+      body: mappedMarkets,
+    };
+  });
 }
 
 /**
@@ -347,9 +356,55 @@ function getUserBalances(chainId, account, tokens) {
 // }
 // returns UserDeposit[]
 function getUserDeposits(chainId, address) {
-  return asyncFetch(
-    `${config.AAVE_API_BASE_URL}/${chainId}/deposits/${address}`
-  );
+  const query = `
+  query GetAccountReservesData {
+    account(id: "${address}") {
+      positions(where: { balance_gt: "0" }) {
+        side
+        balance
+        market {
+          name
+          rates {
+            rate
+            side
+          }
+          inputToken {
+            name
+            symbol
+            decimals
+            id
+          }
+        }
+        isCollateral
+      }
+    }
+  }
+  `;
+  return asyncFetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  }).then((res) => {
+    if (!res.body.data.account) {
+      return {
+        body: [],
+      };
+    }
+    const positions = res.body.data.account.positions;
+    const mappedPositions = positions.map((position) => ({
+      underlyingAsset: position.market.inputToken.id,
+      name: position.market.inputToken.name,
+      symbol: position.market.inputToken.symbol,
+      decimals: position.market.inputToken.decimals,
+      scaledATokenBalance: position.balance,
+      usageAsCollateralEnabledOnUser: position.isCollateral,
+      underlyingBalance: position.balance,
+      underlyingBalanceUSD: position.balance,
+    }));
+    return {
+      body: mappedPositions,
+    };
+  });
 }
 
 // interface UserDebtSummary {
@@ -477,6 +532,9 @@ function formatHealthFactor(healthFactor) {
 }
 
 function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
+  tokenAddresses = tokenAddresses.filter((ele) => !!ele);
+  console.log("batchBalanceOf", chainId, userAddress, tokenAddresses, abi);
+
   const balanceProvider = new ethers.Contract(
     config.balanceProviderAddress,
     abi.body,
