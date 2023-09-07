@@ -9,14 +9,12 @@ const CONTRACT_ABI = {
   variableDebtTokenABI:
     "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/VariableDebtToken.json",
   walletBalanceProviderABI:
-    "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/WalletBalanceProvider.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WalletBalanceProvider.json",
 };
 const DEFAULT_CHAIN_ID = 5000;
 const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
 const ETH_TOKEN = { name: "Ethereum", symbol: "ETH", decimals: 18 };
 const WETH_TOKEN = { name: "Wrapped Ether", symbol: "WETH", decimals: 18 };
-const MATIC_TOKEN = { name: "Matic", symbol: "MATIC", decimals: 18 };
-const WMATIC_TOKEN = { name: "Wrapped Matic", symbol: "WMATIC", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
 
 const GRAPHQL_URL =
@@ -315,11 +313,11 @@ function getMarkets(chainId) {
       name: market.name,
       symbol: market.name,
       decimals: 18,
-      supplyAPY: market.rates.find((rate) => rate.type === "supply").rate,
+      supplyAPY: market.rates.find((rate) => rate.side === "LENDER").rate,
       marketReferencePriceInUsd: market.outputTokenPriceUSD,
       usageAsCollateralEnabled: market.canUseAsCollateral,
       aTokenAddress: market.id,
-      variableBorrowAPY: market.rates.find((rate) => rate.type === "variable")
+      variableBorrowAPY: market.rates.find((rate) => rate.side === "BORROWER")
         .rate,
     }));
     return {
@@ -424,7 +422,72 @@ function getUserDeposits(chainId, address) {
 // }
 // returns UserDebtSummary
 function getUserDebts(chainId, address) {
-  return asyncFetch(`${config.AAVE_API_BASE_URL}/${chainId}/debts/${address}`);
+  const query = `
+  query GetAccountReservesData {
+    account(id: "${address}") {
+      positions(where: { balance_gt: "0" }) {
+        side
+        balance
+        market {
+          name
+          rates {
+            rate
+            side
+          }
+          inputToken {
+            name
+            symbol
+            decimals
+            id
+          }
+        }
+        isCollateral
+      }
+    }
+  }
+  `;
+  return asyncFetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  }).then((res) => {
+    if (!res.body.data.account) {
+      return {
+        body: {
+          healthFactor: "∞",
+          netWorthUSD: "0",
+          availableBorrowsUSD: "0",
+          debts: [],
+        },
+      };
+    }
+    const positions = res.body.data.account.positions;
+    const mappedPositions = positions
+      .filter((pos) => pos.side === "BORROWER")
+      .map((position) => ({
+        underlyingAsset: position.market.inputToken.id,
+        name: position.market.inputToken.name,
+        symbol: position.market.inputToken.symbol,
+        usageAsCollateralEnabledOnUser: position.isCollateral,
+        scaledVariableDebt: position.balance,
+        variableBorrows: position.balance,
+        variableBorrowsUSD: position.balance,
+      }));
+
+    const healthFactor = "∞";
+    const netWorthUSD = "0";
+    const availableBorrowsUSD = "0";
+    const debts = mappedPositions;
+
+    return {
+      body: {
+        healthFactor,
+        netWorthUSD,
+        availableBorrowsUSD,
+        debts,
+      },
+    };
+  });
 }
 
 // App config
@@ -532,12 +595,13 @@ function formatHealthFactor(healthFactor) {
 }
 
 function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
+  const abiList = JSON.parse(abi.body).abi;
+
   tokenAddresses = tokenAddresses.filter((ele) => !!ele);
-  console.log("batchBalanceOf", chainId, userAddress, tokenAddresses, abi);
 
   const balanceProvider = new ethers.Contract(
     config.balanceProviderAddress,
-    abi.body,
+    abiList,
     Ethers.provider().getSigner()
   );
 
@@ -582,16 +646,17 @@ function updateData(refresh) {
       return prev;
     }, {});
 
-    const nativeMarket = markets.find(
-      (market) => market.symbol === config.nativeWrapCurrency.symbol
-    );
-    markets.push({
-      ...nativeMarket,
-      ...{
-        ...config.nativeCurrency,
-        supportPermit: true,
-      },
-    });
+    // TODO: Uncomment this
+    // const nativeMarket = markets.find(
+    //   (market) => market.symbol === config.nativeWrapCurrency.symbol
+    // );
+    // markets.push({
+    //   ...nativeMarket,
+    //   ...{
+    //     ...config.nativeCurrency,
+    //     supportPermit: true,
+    //   },
+    // });
 
     // get user balances
     batchBalanceOf(
@@ -600,7 +665,9 @@ function updateData(refresh) {
       markets.map((market) => market.underlyingAsset),
       config.walletBalanceProviderABI
     )
-      .then((balances) => balances.map((balance) => balance.toString()))
+      .then((balances) => {
+        return balances.map((balance) => balance.toString());
+      })
       .then((userBalances) => {
         const assetsToSupply = markets
           .map((market, idx) => {
@@ -613,6 +680,7 @@ function updateData(refresh) {
             const balanceInUSD = balanceRaw
               .mul(market.marketReferencePriceInUsd)
               .toFixed(3, ROUND_DOWN);
+
             return {
               ...market,
               balance,
