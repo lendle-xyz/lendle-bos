@@ -298,6 +298,10 @@ function getMarkets(chainId) {
       totalAllocPoint
       supplyAllocPoint
       borrowAllocPoint
+      inputToken {
+        symbol
+        decimals
+      }
     }
   }
   `;
@@ -311,14 +315,16 @@ function getMarkets(chainId) {
     const mappedMarkets = markets.map((market) => ({
       underlyingAsset: market.id,
       name: market.name,
-      symbol: market.name,
-      decimals: 18,
-      supplyAPY: market.rates.find((rate) => rate.side === "LENDER").rate,
+      symbol: market.inputToken.symbol,
+      decimals: market.inputToken.decimals,
+      supplyAPY:
+        Number(market.rates.find((rate) => rate.side === "LENDER").rate) / 100,
       marketReferencePriceInUsd: market.outputTokenPriceUSD,
       usageAsCollateralEnabled: market.canUseAsCollateral,
       aTokenAddress: market.id,
-      variableBorrowAPY: market.rates.find((rate) => rate.side === "BORROWER")
-        .rate,
+      variableBorrowAPY:
+        Number(market.rates.find((rate) => rate.side === "BORROWER").rate) /
+        100,
     }));
     return {
       body: mappedMarkets,
