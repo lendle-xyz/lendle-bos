@@ -70,7 +70,7 @@ return (
                           <img
                             width={64}
                             height={64}
-                            src={`https://app.aave.com/icons/tokens/${row.symbol.toLowerCase()}.svg`}
+                            src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
                           />,
                           <div>
                             <div className="token-title">{row.symbol}</div>
@@ -119,7 +119,7 @@ return (
                                     <img
                                       width={64}
                                       height={64}
-                                      src={`https://app.aave.com/icons/tokens/${row.symbol.toLowerCase()}.svg`}
+                                      src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
                                     />,
                                     <div>
                                       <div className="token-title">

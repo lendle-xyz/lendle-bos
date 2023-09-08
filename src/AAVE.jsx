@@ -9,7 +9,7 @@ const CONTRACT_ABI = {
   variableDebtTokenABI:
     "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/VariableDebtToken.json",
   walletBalanceProviderABI:
-    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WalletBalanceProvider.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/abi/WalletBalanceProvider.json",
 };
 const DEFAULT_CHAIN_ID = 5000;
 const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
@@ -325,6 +325,7 @@ function getMarkets(chainId) {
       variableBorrowAPY:
         Number(market.rates.find((rate) => rate.side === "BORROWER").rate) /
         100,
+      availableLiquidityUSD: market.totalValueLockedUSD,
     }));
     return {
       body: mappedMarkets,
@@ -362,7 +363,7 @@ function getUserBalances(chainId, account, tokens) {
 function getUserDeposits(chainId, address) {
   const query = `
   query GetAccountReservesData {
-    account(id: "${address}") {
+    account(id: "${address.toLowerCase()}") {
       positions(where: { balance_gt: "0" }) {
         side
         balance
@@ -395,16 +396,23 @@ function getUserDeposits(chainId, address) {
       };
     }
     const positions = res.body.data.account.positions;
-    const mappedPositions = positions.map((position) => ({
-      underlyingAsset: position.market.inputToken.id,
-      name: position.market.inputToken.name,
-      symbol: position.market.inputToken.symbol,
-      decimals: position.market.inputToken.decimals,
-      scaledATokenBalance: position.balance,
-      usageAsCollateralEnabledOnUser: position.isCollateral,
-      underlyingBalance: position.balance,
-      underlyingBalanceUSD: position.balance,
-    }));
+    const mappedPositions = positions
+      .filter((pos) => pos.side === "LENDER")
+      .map((position) => {
+        const formattedBalance = Big(position.balance)
+          .div(Big(10).pow(position.market.inputToken.decimals))
+          .toString();
+        return {
+          underlyingAsset: position.market.inputToken.id,
+          name: position.market.inputToken.name,
+          symbol: position.market.inputToken.symbol,
+          decimals: position.market.inputToken.decimals,
+          scaledATokenBalance: position.balance,
+          usageAsCollateralEnabledOnUser: position.isCollateral,
+          underlyingBalance: formattedBalance,
+          underlyingBalanceUSD: formattedBalance,
+        };
+      });
     return {
       body: mappedPositions,
     };
@@ -430,7 +438,7 @@ function getUserDeposits(chainId, address) {
 function getUserDebts(chainId, address) {
   const query = `
   query GetAccountReservesData {
-    account(id: "${address}") {
+    account(id: "${address.toLowerCase()}") {
       positions(where: { balance_gt: "0" }) {
         side
         balance
@@ -467,18 +475,25 @@ function getUserDebts(chainId, address) {
         },
       };
     }
+    console.log(res.body.data.account);
+
     const positions = res.body.data.account.positions;
     const mappedPositions = positions
       .filter((pos) => pos.side === "BORROWER")
-      .map((position) => ({
-        underlyingAsset: position.market.inputToken.id,
-        name: position.market.inputToken.name,
-        symbol: position.market.inputToken.symbol,
-        usageAsCollateralEnabledOnUser: position.isCollateral,
-        scaledVariableDebt: position.balance,
-        variableBorrows: position.balance,
-        variableBorrowsUSD: position.balance,
-      }));
+      .map((position) => {
+        const formattedBalance = Big(position.balance)
+          .div(Big(10).pow(position.market.inputToken.decimals))
+          .toString();
+        return {
+          underlyingAsset: position.market.inputToken.id,
+          name: position.market.inputToken.name,
+          symbol: position.market.inputToken.symbol,
+          usageAsCollateralEnabledOnUser: position.isCollateral,
+          scaledVariableDebt: formattedBalance,
+          variableBorrows: formattedBalance,
+          variableBorrowsUSD: formattedBalance,
+        };
+      });
 
     const healthFactor = "∞";
     const netWorthUSD = "0";
@@ -705,7 +720,7 @@ function updateData(refresh) {
           assetsToSupply,
         });
         // get user borrow data
-        updateUserDebts(marketsMapping, assetsToSupply, refresh);
+        updateUserDebts(markets, assetsToSupply, refresh);
       });
     // get user supplies
     updateUserSupplies(marketsMapping, refresh);
@@ -750,8 +765,8 @@ function updateUserSupplies(marketsMapping, refresh) {
   });
 }
 
-function updateUserDebts(marketsMapping, assetsToSupply, refresh) {
-  if (!marketsMapping || !assetsToSupply) {
+function updateUserDebts(markets, assetsToSupply, refresh) {
+  if (!markets || !assetsToSupply) {
     return;
   }
 
@@ -774,9 +789,12 @@ function updateUserDebts(marketsMapping, assetsToSupply, refresh) {
     const assetsToBorrow = {
       ...userDebts,
       healthFactor: formatHealthFactor(userDebts.healthFactor),
-      debts: userDebts.debts
-        .map((userDebt) => {
-          const market = marketsMapping[userDebt.underlyingAsset];
+      debts: markets
+        .map((market) => {
+          const userDebt = userDebts.debts.find(
+            (debt) => debt.underlyingAsset === market.underlyingAsset
+          );
+
           if (!market) {
             return;
           }
@@ -807,6 +825,7 @@ function updateUserDebts(marketsMapping, assetsToSupply, refresh) {
             availableBorrowsUSD,
             balance: assetsToSupplyMap[assetsToSupplyMapKey].balance,
             balanceInUSD: assetsToSupplyMap[assetsToSupplyMapKey].balanceInUSD,
+            borrowingEnabled: true,
           };
         })
         .filter((asset) => !!asset)

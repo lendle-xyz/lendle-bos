@@ -160,6 +160,15 @@ const EthImage = () => (
   />
 );
 
+const MantleImage = () => (
+  <img
+    className="network-img"
+    src={
+      "https://app.lendle.xyz/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FMNT.dbd5e16f.png&w=64&q=75"
+    }
+  />
+);
+
 const toggleDropdown = disabled
   ? () => {}
   : () => State.update({ showDropdown: !state.showDropdown });
@@ -167,9 +176,9 @@ const toggleDropdown = disabled
 const getChainImage = (chainId) => {
   switch (chainId) {
     case 1:
-    // TODO: add mantle image
-    case 5000:
       return EthImage;
+    case 5000:
+      return MantleImage;
     case 42161:
       return ArbImage;
     case 137:
@@ -198,7 +207,7 @@ return (
             switchNetwork(5000);
           }}
         >
-          <EthImage />
+          <MantleImage />
           <div>Mantle</div>
         </div>
       </DropdownMobile>
@@ -218,7 +227,7 @@ return (
             switchNetwork(5000);
           }}
         >
-          <EthImage />
+          <MantleImage />
           <div>Mantle</div>
         </div>
       </div>

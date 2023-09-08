@@ -561,7 +561,7 @@ return (
                             <img
                               width={26}
                               height={26}
-                              src={`https://app.aave.com/icons/tokens/${symbol.toLowerCase()}.svg`}
+                              src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${symbol.toLowerCase()}.svg`}
                             />
                             <TokenTexture>{symbol}</TokenTexture>
                           </TokenWrapper>
