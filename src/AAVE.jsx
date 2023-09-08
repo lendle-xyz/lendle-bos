@@ -681,7 +681,7 @@ function updateData(refresh) {
       state.chainId,
       state.address,
       markets.map((market) => market.underlyingAsset),
-      config.walletBalanceProviderABI
+      config.walletBalanceProviderABI.body
     )
       .then((balances) => {
         return balances.map((balance) => balance.toString());

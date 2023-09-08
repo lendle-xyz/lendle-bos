@@ -149,15 +149,11 @@ function withdrawErc20(asset, actualAmount, shownAmount) {
     .getSigner()
     .getAddress()
     .then((address) => {
-      console.log("conffig", config);
-
       const pool = new ethers.Contract(
         config.aavePoolV3Address,
         config.aavePoolV3ABI.body,
         Ethers.provider().getSigner()
       );
-
-      console.log("withdraw", asset, actualAmount, address);
 
       return pool["withdraw(address,uint256,address)"](
         asset,
