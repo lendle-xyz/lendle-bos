@@ -404,7 +404,7 @@ function getUserDeposits(chainId, address) {
           .toString();
         return {
           underlyingAsset: position.market.inputToken.id,
-          name: position.market.inputToken.name,
+          name: position.market.name,
           symbol: position.market.inputToken.symbol,
           decimals: position.market.inputToken.decimals,
           scaledATokenBalance: position.balance,
@@ -475,7 +475,6 @@ function getUserDebts(chainId, address) {
         },
       };
     }
-    console.log(res.body.data.account);
 
     const positions = res.body.data.account.positions;
     const mappedPositions = positions
@@ -486,7 +485,7 @@ function getUserDebts(chainId, address) {
           .toString();
         return {
           underlyingAsset: position.market.inputToken.id,
-          name: position.market.inputToken.name,
+          name: position.market.name,
           symbol: position.market.inputToken.symbol,
           usageAsCollateralEnabledOnUser: position.isCollateral,
           scaledVariableDebt: formattedBalance,
@@ -497,7 +496,7 @@ function getUserDebts(chainId, address) {
 
     const healthFactor = "∞";
     const netWorthUSD = "0";
-    const availableBorrowsUSD = "0";
+    const availableBorrowsUSD = "2";
     const debts = mappedPositions;
 
     return {
@@ -812,12 +811,12 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
           return {
             ...market,
             ...userDebt,
-            ...(market.symbol === config.nativeWrapCurrency.symbol
-              ? {
-                  ...config.nativeCurrency,
-                  supportPermit: true,
-                }
-              : {}),
+            // ...(market.symbol === config.nativeWrapCurrency.symbol
+            //   ? {
+            //       ...config.nativeCurrency,
+            //       supportPermit: true,
+            //     }
+            //   : {}),
             availableBorrows: calculateAvailableBorrows({
               availableBorrowsUSD,
               marketReferencePriceInUsd: market.marketReferencePriceInUsd,
