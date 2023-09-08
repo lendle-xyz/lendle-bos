@@ -149,11 +149,15 @@ function withdrawErc20(asset, actualAmount, shownAmount) {
     .getSigner()
     .getAddress()
     .then((address) => {
+      console.log("conffig", config);
+
       const pool = new ethers.Contract(
         config.aavePoolV3Address,
         config.aavePoolV3ABI.body,
         Ethers.provider().getSigner()
       );
+
+      console.log("withdraw", asset, actualAmount, address);
 
       return pool["withdraw(address,uint256,address)"](
         asset,
@@ -551,6 +555,8 @@ return (
                           .mul(Big(10).pow(decimals))
                           .toFixed(0, ROUND_DOWN);
                   const shownAmount = state.amount;
+                  console.log("actualAmount", actualAmount);
+                  console.log("shownAmount", shownAmount);
                   if (symbol === config.nativeCurrency.symbol) {
                     // supply weth
                     withdrawETH(actualAmount, shownAmount);

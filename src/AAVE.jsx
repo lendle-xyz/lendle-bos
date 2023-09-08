@@ -3,11 +3,11 @@ const CONTRACT_ABI = {
   wrappedTokenGatewayV3ABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WETHGateway.json",
   erc20Abi:
-    "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/ERC20Permit.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/ERC20.json",
   aavePoolV3ABI:
-    "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/AAVEPoolV3.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/LendingPool.json",
   variableDebtTokenABI:
-    "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/VariableDebtToken.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/VariableDebtToken.json",
   walletBalanceProviderABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WalletBalanceProvider.json",
 };
@@ -27,9 +27,7 @@ function getNetworkConfig(chainId) {
     erc20Abi: fetch(CONTRACT_ABI.erc20Abi),
     aavePoolV3ABI: fetch(CONTRACT_ABI.aavePoolV3ABI),
     variableDebtTokenABI: fetch(CONTRACT_ABI.variableDebtTokenABI),
-    walletBalanceProviderABI: JSON.parse(
-      fetch(CONTRACT_ABI.walletBalanceProviderABI)?.body
-    )?.abi,
+    walletBalanceProviderABI: fetch(CONTRACT_ABI.walletBalanceProviderABI),
   };
 
   const constants = {
@@ -46,9 +44,9 @@ function getNetworkConfig(chainId) {
         nativeCurrency: ETH_TOKEN,
         nativeWrapCurrency: WETH_TOKEN,
         rpcUrl: "https://rpc.mantle.xyz",
-        aavePoolV3Address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+        aavePoolV3Address: "0xCFa5aE7c2CE8Fadc6426C1ff872cA45378Fb7cF3",
         wrappedTokenGatewayV3Address:
-          "0xD322A49006FC828F9B5B37Ab215F99B4E5caB19C",
+          "0xEc831f8710C6286a91a348928600157f07aC55c2",
         balanceProviderAddress: "0x370bc6B2940A6927fFf2D64BA3D96C641579a01e",
         ...abis,
         ...constants,
