@@ -1,7 +1,7 @@
 const ROUND_DOWN = 0;
 const CONTRACT_ABI = {
   wrappedTokenGatewayV3ABI:
-    "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/WrappedTokenGatewayV3ABI.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WETHGateway.json",
   erc20Abi:
     "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/ERC20Permit.json",
   aavePoolV3ABI:
@@ -18,7 +18,7 @@ const WETH_TOKEN = { name: "Wrapped Ether", symbol: "WETH", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
 
 const GRAPHQL_URL =
-  "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
+  "https://api.0xgraph.xyz/subgraphs/name/mantle/lendle-finance";
 
 // Get AAVE network config by chain id
 function getNetworkConfig(chainId) {
@@ -27,7 +27,9 @@ function getNetworkConfig(chainId) {
     erc20Abi: fetch(CONTRACT_ABI.erc20Abi),
     aavePoolV3ABI: fetch(CONTRACT_ABI.aavePoolV3ABI),
     variableDebtTokenABI: fetch(CONTRACT_ABI.variableDebtTokenABI),
-    walletBalanceProviderABI: fetch(CONTRACT_ABI.walletBalanceProviderABI),
+    walletBalanceProviderABI: JSON.parse(
+      fetch(CONTRACT_ABI.walletBalanceProviderABI)?.body
+    )?.abi,
   };
 
   const constants = {
@@ -615,13 +617,11 @@ function formatHealthFactor(healthFactor) {
 }
 
 function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
-  const abiList = JSON.parse(abi.body).abi;
-
   tokenAddresses = tokenAddresses.filter((ele) => !!ele);
 
   const balanceProvider = new ethers.Contract(
     config.balanceProviderAddress,
-    abiList,
+    abi,
     Ethers.provider().getSigner()
   );
 
