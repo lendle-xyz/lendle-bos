@@ -12,6 +12,7 @@ const {
 if (!data) {
   return <div />;
 }
+
 const ROUND_DOWN = 0;
 function isValid(a) {
   if (!a) return false;

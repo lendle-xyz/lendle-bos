@@ -13,8 +13,8 @@ const CONTRACT_ABI = {
 };
 const DEFAULT_CHAIN_ID = 5000;
 const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
-const ETH_TOKEN = { name: "Ethereum", symbol: "ETH", decimals: 18 };
-const WETH_TOKEN = { name: "Wrapped Ether", symbol: "WETH", decimals: 18 };
+const ETH_TOKEN = { name: "Mantle", symbol: "MNT", decimals: 18 };
+const WETH_TOKEN = { name: "Wrapped Mantle", symbol: "WMNT", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
 
 const GRAPHQL_URL =
@@ -43,7 +43,7 @@ function getNetworkConfig(chainId) {
     case 5000: // Mantle mainnet
       return {
         chainName: "Mantle Mainnet",
-        nativeCurrency: ETH_TOKEN,
+        nativeCurrency: WETH_TOKEN,
         nativeWrapCurrency: WETH_TOKEN,
         rpcUrl: "https://rpc.mantle.xyz",
         aavePoolV3Address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
@@ -328,6 +328,7 @@ function getMarkets(chainId) {
         Number(market.rates.find((rate) => rate.side === "BORROWER").rate) /
         100,
       availableLiquidityUSD: market.totalValueLockedUSD,
+      availableLiquidity: market.totalValueLockedUSD,
     }));
     return {
       body: mappedMarkets,
