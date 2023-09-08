@@ -9,7 +9,7 @@ const CONTRACT_ABI = {
   variableDebtTokenABI:
     "https://raw.githubusercontent.com/corndao/aave-v3-bos-app/main/abi/VariableDebtToken.json",
   walletBalanceProviderABI:
-    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/abi/WalletBalanceProvider.json",
+    "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WalletBalanceProvider.json",
 };
 const DEFAULT_CHAIN_ID = 5000;
 const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
