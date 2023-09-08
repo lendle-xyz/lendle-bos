@@ -43,7 +43,7 @@ function getNetworkConfig(chainId) {
     case 5000: // Mantle mainnet
       return {
         chainName: "Mantle Mainnet",
-        nativeCurrency: WETH_TOKEN,
+        nativeCurrency: ETH_TOKEN,
         nativeWrapCurrency: WETH_TOKEN,
         rpcUrl: "https://rpc.mantle.xyz",
         aavePoolV3Address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
@@ -667,17 +667,16 @@ function updateData(refresh) {
       return prev;
     }, {});
 
-    // TODO: Uncomment this
-    // const nativeMarket = markets.find(
-    //   (market) => market.symbol === config.nativeWrapCurrency.symbol
-    // );
-    // markets.push({
-    //   ...nativeMarket,
-    //   ...{
-    //     ...config.nativeCurrency,
-    //     supportPermit: true,
-    //   },
-    // });
+    const nativeMarket = markets.find(
+      (market) => market.symbol === config.nativeWrapCurrency.symbol
+    );
+    markets.push({
+      ...nativeMarket,
+      ...{
+        ...config.nativeCurrency,
+        supportPermit: true,
+      },
+    });
 
     // get user balances
     batchBalanceOf(

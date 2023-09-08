@@ -370,14 +370,17 @@ const changeValue = (value) => {
   State.update({ amount: value });
 };
 
-const disabled =
-  (state.newHealthFactor !== "∞" &&
-    (!isValid(state.newHealthFactor) ||
-      state.newHealthFactor === "" ||
-      Big(state.newHealthFactor).lt(1))) ||
-  !state.amount ||
-  !isValid(state.amount) ||
-  Number(state.amount) === 0;
+// TODO: fix it
+// const disabled =
+//   (state.newHealthFactor !== "∞" &&
+//     (!isValid(state.newHealthFactor) ||
+//       state.newHealthFactor === "" ||
+//       Big(state.newHealthFactor).lt(1))) ||
+//   !state.amount ||
+//   !isValid(state.amount) ||
+//   Number(state.amount) === 0;
+
+const disabled = false;
 
 return (
   <Widget
