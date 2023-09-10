@@ -37,6 +37,9 @@ return (
         config,
         style: {
           marginTop: "16px",
+          background: "#1B0027",
+          border: "1px solid #42307D",
+          borderRadius: "12px",
         },
         title: "Your supplies",
         body:

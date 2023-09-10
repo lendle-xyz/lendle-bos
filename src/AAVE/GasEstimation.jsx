@@ -4,7 +4,7 @@ const GasEstimationContainer = styled.div`
   display: flex;
   font-size: 14px;
   font-weight: bold;
-  color: #8247e5;
+  color: #9E77ED;
 
   img {
     margin-right: 8px;

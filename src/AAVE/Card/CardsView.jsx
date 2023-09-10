@@ -2,7 +2,7 @@ const { title, body, style, config } = props;
 
 const CardsContainer = styled.div`
   border-radius: 10px;
-  background: #151718;
+  background: #42307D;
 
   padding: 18px 0;
 `;

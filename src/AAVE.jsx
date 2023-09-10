@@ -528,6 +528,7 @@ function getConfig(network) {
           "8345e6972edb36c6b5c3e34b81eb515501258f52b95b8ad01720209cd619c652",
         nodeUrl: "https://rpc.mainnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
+        ipfsPrefixLendle: "https://ipfs.io/ipfs",
         ...(chainId ? getNetworkConfig(chainId) : {}),
       };
     case "testnet":
@@ -535,6 +536,7 @@ function getConfig(network) {
         ownerId: "aave-v3.testnet",
         nodeUrl: "https://rpc.testnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
+        ipfsPrefixLendle: "https://ipfs.io/ipfs",
         ...(chainId ? getNetworkConfig(chainId) : {}),
       };
     default:
@@ -882,7 +884,7 @@ if (state.walletConnected && state.chainId && loading) {
 
 const Body = styled.div`
   padding: 24px 15px;
-  background: #0e0e26;
+  background: #1B0027;
   min-height: 100vh;
   color: white;
 `;
@@ -912,7 +914,7 @@ const body = loading ? (
     <Widget src={`${config.ownerId}/widget/AAVE.Header`} props={{ config }} />
     <Body>
       <FlexContainer>
-        <Widget
+        {/* <Widget
           src={`${config.ownerId}/widget/AAVE.NetworkSwitcher`}
           props={{
             chainId: state.chainId,
@@ -921,7 +923,7 @@ const body = loading ? (
               switchEthereumChain(chainId);
             },
           }}
-        />
+        /> */}
         <Widget
           src={`${config.ownerId}/widget/AAVE.HeroData`}
           props={{

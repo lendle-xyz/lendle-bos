@@ -2,7 +2,8 @@ const { config } = props;
 
 const Header = styled.div`
   padding: 18px 15px;
-  background: #151718;
+  background: #42307D;
+  border-bottom: 1px solid #55458A;
 
   display: flex;
   justify-content: space-between;
@@ -14,32 +15,31 @@ const Header = styled.div`
     display: grid;
     place-content: center;
 
-    background: #262626;
-    border-radius: 5px;
-    border: 0;
+    background: #534386;
+    border-radius: 8px;
+    border: 1px solid #7669A1;
 
     color: white;
     transition: all 300ms ease-in-out;
     &:hover {
-      background: #262626;
-      opacity: 0.5;
+      background: #9E77ED;
     }
     &:active {
-      background: #262626 !important;
+      background: #9E77ED !important;
     }
   }
 `;
 
-const AAVELogo = () => (
+const LendleLogo = () => (
   <img
-    height={25}
-    src={`${config.ipfsPrefix}/bafkreihd7awu5x6evyucm4u4qpbb7ezkddsut2mra7ugjxqd4x74bpbln4`}
+    height={30}
+    src={`${config.ipfsPrefixLendle}/QmarDti6UVtyp4XmMD35seVnCdtaf2ZQ1HbfW9CUEKtPAC?filename=Logo.svg`}
   />
 );
 
 return (
   <Header>
-    <AAVELogo />
+    <LendleLogo />
     <Web3Connect className="web3-connect" connectLabel="Connect Wallet" />
   </Header>
 );

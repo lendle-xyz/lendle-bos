@@ -77,7 +77,7 @@ const WhiteTexture = styled.div`
 const GreenTexture = styled.div`
   font-size: 14px;
   font-weight: bold;
-  color: #2cffa7;
+  color: #12B76A;
 `;
 
 const TransactionOverviewContainer = styled.div`
@@ -108,7 +108,7 @@ const Input = styled.input`
 `;
 
 const Max = styled.span`
-  color: #8247e5;
+  color: #9E77ED;
   cursor: pointer;
 `;
 

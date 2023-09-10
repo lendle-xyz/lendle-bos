@@ -19,7 +19,7 @@ const ModalWrapper = styled.div`
 
 const ModalContainer = styled.div`
   width: 100%;
-  background: #151718;
+  background: #42307D;
   border-radius: 16px;
 
   @media (min-width: 640px) {
@@ -52,7 +52,7 @@ const Title = styled.div`
 `;
 
 const ModalBody = styled.div`
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid #42307D;
   padding: 30px 14px;
 `;
 return (

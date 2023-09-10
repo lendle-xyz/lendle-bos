@@ -1,11 +1,11 @@
 const { config, select, setSelect } = props;
 
 const TabContainer = styled.div`
-  background: #212233;
+  background: #42307D;
 
   display: flex;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: 8px;
 
   margin-top: 30px;
 
@@ -22,9 +22,9 @@ const TabItem = styled.div`
 
   display: grid;
   place-content: center;
-  border-radius: 10px;
+  border-radius: 4px;
 
-  ${(props) => props.selected && "background: #8247E5;"}
+  ${(props) => props.selected && "background: #FFFFFF; color: #1B0027;"}
   ${(props) =>
     props.disabled &&
     `
@@ -41,7 +41,8 @@ const TabItem = styled.div`
     `
     cursor: pointer;
     &:hover {
-      background: #8247E5;
+      background: #FFFFFF;
+      color: #1B0027;
       opacity: 0.7;
     }
   `}

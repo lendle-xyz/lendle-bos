@@ -45,7 +45,7 @@ const KVData = styled.div`
     }
   }
   .text-green {
-    color: #2cffa7;
+    color: #12B76A;
   }
 `;
 

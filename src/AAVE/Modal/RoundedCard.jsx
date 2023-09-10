@@ -8,7 +8,7 @@ const Title = styled.div`
 const Content = styled.div`
   padding: 18px 14px;
   background: rgba(0, 0, 0, 0.26);
-  border: 1px solid #383947;
+  border: 1px solid #42307D;
   border-radius: 10px;
 `;
 

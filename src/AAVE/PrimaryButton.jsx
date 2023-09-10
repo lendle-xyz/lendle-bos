@@ -4,8 +4,8 @@ const PrimaryButton = styled.button`
   border: 0;
 
   color: white;
-  background: ${loading || disabled ? "#36295C" : "#8247e5"};
-  border-radius: 5px;
+  background: ${loading || disabled ? "#E9D7FE" : "#9E77ED"};
+  border-radius: 8px;
 
   height: 48px;
   width: 100%;
