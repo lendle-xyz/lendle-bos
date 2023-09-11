@@ -12,6 +12,7 @@ const {
   borrowETHGas,
   borrowERC20Gas,
   formatHealthFactor,
+  hideTokens,
 } = props;
 
 State.init({
@@ -88,7 +89,7 @@ return (
             ) : (
               <>
                 {/* mobile view */}
-                {debts.map((row) => (
+                {debts.map((row) => hideTokens.includes(row.symbol) ? null : (
                   <Widget
                     src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
                     props={{
@@ -176,6 +177,7 @@ return (
                     config,
                     headers: ["Asset", "Debt", "APY", ""],
                     data: debts.map((row) => {
+                      if (hideTokens.includes(row.symbol)) {return []}
                       return [
                         <Widget
                           src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}

@@ -9,6 +9,7 @@ const {
   withdrawETHGas,
   withdrawERC20Gas,
   formatHealthFactor,
+  hideTokens,
 } = props;
 
 State.init({
@@ -54,7 +55,7 @@ return (
           ) : (
             <>
               {/* mobileView */}
-              {yourSupplies.map((row) => (
+              {yourSupplies.map((row) => hideTokens.includes(row.symbol) ? [] : (
                 <Widget
                   src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
                   props={{
@@ -136,6 +137,7 @@ return (
                   config,
                   headers: ["Asset", "Supply Balance", "Supply APY", ""],
                   data: yourSupplies.map((row) => {
+                    if (hideTokens.includes(row.symbol)) {return []}
                     return [
                       <Widget
                         src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}

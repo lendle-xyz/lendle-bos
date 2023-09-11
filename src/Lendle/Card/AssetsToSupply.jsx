@@ -9,6 +9,7 @@ const {
   formatHealthFactor,
   depositETHGas,
   depositERC20Gas,
+  hideTokens,
 } = props;
 
 State.init({
@@ -65,7 +66,7 @@ return (
                     "Can be Collateral",
                     "",
                   ],
-                  data: assetsToSupply.map((row) => [
+                  data: assetsToSupply.map((row) => hideTokens.includes(row.symbol) ? [] : [
                     <Widget
                       src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                       props={{
@@ -105,6 +106,7 @@ return (
               />
               {/* mobile view */}
               {assetsToSupply.map((row) => {
+                if (hideTokens.includes(row.symbol)) {return null}
                 return (
                   <Widget
                     src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}

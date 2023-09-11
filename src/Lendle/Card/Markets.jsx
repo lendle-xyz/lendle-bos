@@ -1,6 +1,7 @@
 const {
   config,
   markets,
+  hideTokens,
   // showVestModal,
   // setShowVestModal,
   // onActionSuccess,
@@ -10,8 +11,6 @@ const {
   // depositETHGas,
   // depositERC20Gas,
 } = props;
-
-console.log("markets2", markets);
 
 State.init({
   data: undefined,
@@ -68,8 +67,7 @@ return (
                     "Total borrowed",
                     "",
                   ],
-                  data: markets.map((row) =>
-                    row.underlyingAsset
+                  data: markets.map((row) => (row.underlyingAsset && !hideTokens.includes(row.symbol))
                       ? [
                           <Widget
                             src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
@@ -122,114 +120,117 @@ return (
                 }}
               />
               {/* mobile view */}
-              {markets.map((row) => {
-                return (
-                  <Widget
-                    src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
-                    props={{
-                      children: [
-                        <Widget
-                          src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
-                          props={{
-                            config,
-                            children: [
-                              <Widget
-                                src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
-                                props={{
-                                  children: row.underlyingAsset
-                                    ? [
-                                        <img
-                                          width={64}
-                                          height={64}
-                                          src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
-                                        />,
-                                        <div>
-                                          <div className="token-title">
-                                            {row.symbol}
-                                          </div>
-                                          {/* <div className="token-chain">
+                {markets.map((row) => {
+                  if ((row.underlyingAsset && !hideTokens.includes(row.symbol))) {
+                    return (
+                      <Widget
+                        src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
+                        props={{
+                          children: [
+                            <Widget
+                              src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
+                              props={{
+                                config,
+                                children: [
+                                  <Widget
+                                    src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
+                                    props={{
+                                      children: row.underlyingAsset
+                                        ? [
+                                          <img
+                                            width={64}
+                                            height={64}
+                                            src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
+                                          />,
+                                          <div>
+                                            <div className="token-title">
+                                              {row.symbol}
+                                            </div>
+                                            {/* <div className="token-chain">
                                         {row.name}
                                       </div> */}
-                                        </div>,
-                                      ]
-                                    : [],
-                                }}
-                              />,
-                              <Widget
-                                src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
-                                props={{
-                                  children: row.underlyingAsset
-                                    ? [
-                                        <div className="card-data-row">
-                                          <div className="card-data-key">
-                                            Market size
-                                          </div>
-                                          <div className="card-data-value">
-                                            <div>
-                                              {Number(
-                                                row.totalDepositBalanceUSD /
+                                          </div>,
+                                        ]
+                                        : [],
+                                    }}
+                                  />,
+                                  <Widget
+                                    src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
+                                    props={{
+                                      children: row.underlyingAsset
+                                        ? [
+                                          <div className="card-data-row">
+                                            <div className="card-data-key">
+                                              Market size
+                                            </div>
+                                            <div className="card-data-value">
+                                              <div>
+                                                {Number(
+                                                  row.totalDepositBalanceUSD /
                                                   row.marketReferencePriceInUsd
-                                              ).toFixed(0)}
+                                                ).toFixed(0)}
+                                              </div>
+                                              <div className="card-data-usd-price">
+                                                ${" "}
+                                                {Number(
+                                                  row.totalDepositBalanceUSD
+                                                ).toFixed(0)}
+                                              </div>
                                             </div>
-                                            <div className="card-data-usd-price">
-                                              ${" "}
-                                              {Number(
-                                                row.totalDepositBalanceUSD
-                                              ).toFixed(0)}
+                                          </div>,
+                                          <div className="card-data-row">
+                                            <div className="card-data-key">
+                                              Supply APY
                                             </div>
-                                          </div>
-                                        </div>,
-                                        <div className="card-data-row">
-                                          <div className="card-data-key">
-                                            Supply APY
-                                          </div>
-                                          <div className="card-data-value">{`${(
-                                            Number(row.supplyAPY) * 100
-                                          ).toFixed(2)} %`}</div>
-                                        </div>,
-                                        <div className="card-data-row">
-                                          <div className="card-data-key">
-                                            Borrow APY
-                                          </div>
-                                          <div className="card-data-value">{`${(
-                                            Number(row.variableBorrowAPY) * 100
-                                          ).toFixed(2)} %`}</div>
-                                        </div>,
-                                        <div className="card-data-row">
-                                          <div className="card-data-key">
-                                            Total borrowed
-                                          </div>
-                                          <div className="card-data-value">
-                                            <div>
-                                              {Number(
-                                                row.totalBorrowBalanceUSD /
+                                            <div className="card-data-value">{`${(
+                                              Number(row.supplyAPY) * 100
+                                            ).toFixed(2)} %`}</div>
+                                          </div>,
+                                          <div className="card-data-row">
+                                            <div className="card-data-key">
+                                              Borrow APY
+                                            </div>
+                                            <div className="card-data-value">{`${(
+                                              Number(row.variableBorrowAPY) * 100
+                                            ).toFixed(2)} %`}</div>
+                                          </div>,
+                                          <div className="card-data-row">
+                                            <div className="card-data-key">
+                                              Total borrowed
+                                            </div>
+                                            <div className="card-data-value">
+                                              <div>
+                                                {Number(
+                                                  row.totalBorrowBalanceUSD /
                                                   row.marketReferencePriceInUsd
-                                              ).toFixed(0)}
+                                                ).toFixed(0)}
+                                              </div>
+                                              <div className="card-data-usd-price">
+                                                ${" "}
+                                                {Number(
+                                                  row.totalBorrowBalanceUSD
+                                                ).toFixed(0)}
+                                              </div>
                                             </div>
-                                            <div className="card-data-usd-price">
-                                              ${" "}
-                                              {Number(
-                                                row.totalBorrowBalanceUSD
-                                              ).toFixed(0)}
-                                            </div>
-                                          </div>
-                                        </div>,
-                                      ]
-                                    : [],
-                                }}
-                              />,
-                              // <VestButton data={row} />,
-                            ],
-                          }}
-                        />,
-                        <Widget
-                          src={`${config.ownerId}/widget/Lendle.Card.Divider`}
-                          props={{ config }}
-                        />,
-                      ],
-                    }}
-                  />
-                );
+                                          </div>,
+                                        ]
+                                        : [],
+                                    }}
+                                  />,
+                                  // <VestButton data={row} />,
+                                ],
+                              }}
+                            />,
+                            <Widget
+                              src={`${config.ownerId}/widget/Lendle.Card.Divider`}
+                              props={{ config }}
+                            />,
+                          ],
+                        }}
+                      />
+                    );
+                  }
+                return null
               })}
             </>
           ),

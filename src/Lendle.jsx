@@ -16,6 +16,7 @@ const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
 const ETH_TOKEN = { name: "Mantle", symbol: "MNT", decimals: 18 };
 const WETH_TOKEN = { name: "Wrapped Mantle", symbol: "WMNT", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
+const HIDE_TOKENS_SYMBOL = ["MNT"]
 
 const GRAPHQL_URL =
   "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
@@ -911,6 +912,7 @@ const body = loading ? (
         props={{
           config,
           markets: state.markets,
+          hideTokens: HIDE_TOKENS_SYMBOL,
           // chainId: state.chainId,
           // showVestModal: state.showVestModal,
           // setShowVestModal: (isShow) =>
@@ -993,6 +995,7 @@ const body = loading ? (
               formatHealthFactor,
               withdrawETHGas,
               withdrawERC20Gas,
+              hideTokens: HIDE_TOKENS_SYMBOL,
             }}
           />
           <Widget
@@ -1011,6 +1014,7 @@ const body = loading ? (
               formatHealthFactor,
               depositETHGas,
               depositERC20Gas,
+              hideTokens: HIDE_TOKENS_SYMBOL,
             }}
           />
         </>
@@ -1035,6 +1039,7 @@ const body = loading ? (
               repayERC20Gas,
               borrowETHGas,
               borrowERC20Gas,
+              hideTokens: HIDE_TOKENS_SYMBOL,
             }}
           />
           <Widget
@@ -1051,6 +1056,7 @@ const body = loading ? (
               onActionSuccess,
               borrowETHGas,
               borrowERC20Gas,
+              hideTokens: HIDE_TOKENS_SYMBOL,
             }}
           />
         </>
