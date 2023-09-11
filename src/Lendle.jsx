@@ -18,7 +18,7 @@ const WETH_TOKEN = { name: "Wrapped Mantle", symbol: "WMNT", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
 
 const GRAPHQL_URL =
-  "https://api.0xgraph.xyz/subgraphs/name/mantle/lendle-finance";
+  "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
 
 // Get AAVE network config by chain id
 function getNetworkConfig(chainId) {
@@ -517,17 +517,10 @@ function getUserDebts(chainId, address) {
 function getConfig(network) {
   const chainId = state.chainId;
   switch (network) {
-    // case "mainnet":
-    //   return {
-    //     ownerId: "aave-v3.near",
-    //     nodeUrl: "https://rpc.mainnet.near.org",
-    //     ipfsPrefix: "https://ipfs.near.social/ipfs",
-    //     ...(chainId ? getNetworkConfig(chainId) : {}),
-    //   };
     case "mainnet":
       return {
         ownerId:
-          "8345e6972edb36c6b5c3e34b81eb515501258f52b95b8ad01720209cd619c652",
+          "lendle.near",
         nodeUrl: "https://rpc.mainnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
         ipfsPrefixLendle: "https://ipfs.io/ipfs",
