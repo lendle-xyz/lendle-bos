@@ -308,7 +308,7 @@ function depositFromApproval(amount) {
     .getSigner()
     .getAddress()
     .then((userAddress) => {
-      return pool["supply(address,uint256,address,uint16)"](
+      return pool["deposit(address,uint256,address,uint16)"](
         tokenAddress,
         amount,
         userAddress,
