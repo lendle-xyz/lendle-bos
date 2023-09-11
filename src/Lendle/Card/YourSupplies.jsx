@@ -17,7 +17,7 @@ State.init({
 
 const WithdrawButton = ({ data }) => (
   <Widget
-    src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+    src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
     props={{
       config,
       children: "Withdraw",
@@ -32,7 +32,7 @@ const WithdrawButton = ({ data }) => (
 return (
   <>
     <Widget
-      src={`${config.ownerId}/widget/AAVE.Card.CardsView`}
+      src={`${config.ownerId}/widget/Lendle.Card.CardsView`}
       props={{
         config,
         style: {
@@ -45,7 +45,7 @@ return (
         body:
           !yourSupplies || yourSupplies.length === 0 ? (
             <Widget
-              src={`${config.ownerId}/widget/AAVE.Card.CardEmpty`}
+              src={`${config.ownerId}/widget/Lendle.Card.CardEmpty`}
               props={{
                 config,
                 children: "Nothing supplied yet",
@@ -56,20 +56,20 @@ return (
               {/* mobileView */}
               {yourSupplies.map((row) => (
                 <Widget
-                  src={`${config.ownerId}/widget/AAVE.Card.CardContainer`}
+                  src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
                   props={{
                     children: [
                       <Widget
-                        src={`${config.ownerId}/widget/AAVE.Card.Divider`}
+                        src={`${config.ownerId}/widget/Lendle.Card.Divider`}
                         props={{ config }}
                       />,
                       <Widget
-                        src={`${config.ownerId}/widget/AAVE.Card.CardsBody`}
+                        src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
                         props={{
                           config,
                           children: [
                             <Widget
-                              src={`${config.ownerId}/widget/AAVE.Card.TokenWrapper`}
+                              src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                               props={{
                                 children: [
                                   <img
@@ -89,7 +89,7 @@ return (
                               }}
                             />,
                             <Widget
-                              src={`${config.ownerId}/widget/AAVE.Card.CardDataWrapper`}
+                              src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
                               props={{
                                 children: [
                                   <div className="card-data-row">
@@ -131,14 +131,14 @@ return (
               ))}
               {/* pcView */}
               <Widget
-                src={`${config.ownerId}/widget/AAVE.Card.CardsTable`}
+                src={`${config.ownerId}/widget/Lendle.Card.CardsTable`}
                 props={{
                   config,
                   headers: ["Asset", "Supply Balance", "Supply APY", ""],
                   data: yourSupplies.map((row) => {
                     return [
                       <Widget
-                        src={`${config.ownerId}/widget/AAVE.Card.TokenWrapper`}
+                        src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                         props={{
                           children: [
                             <img
@@ -171,7 +171,7 @@ return (
     />
     {showWithdrawModal && (
       <Widget
-        src={`${config.ownerId}/widget/AAVE.Modal.WithdrawModal`}
+        src={`${config.ownerId}/widget/Lendle.Modal.WithdrawModal`}
         props={{
           config,
           chainId,

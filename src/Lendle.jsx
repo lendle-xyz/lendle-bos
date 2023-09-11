@@ -583,7 +583,7 @@ function importFunctions(imports) {
 const modules = {
   number: `${config.ownerId}/widget/Utils.Number`,
   date: `${config.ownerId}/widget/Utils.Date`,
-  data: `${config.ownerId}/widget/AAVE.Data`,
+  data: `${config.ownerId}/widget/Lendle.Data`,
 };
 // Import functions
 // const { formatAmount } = state.imports.number;
@@ -904,7 +904,7 @@ const FlexContainer = styled.div`
 // Component body
 const body = loading ? (
   <>
-    <Widget src={`${config.ownerId}/widget/AAVE.Header`} props={{ config }} />
+    <Widget src={`${config.ownerId}/widget/Lendle.Header`} props={{ config }} />
     <Body>
       {state.walletConnected
         ? state.isChainSupported
@@ -914,7 +914,7 @@ const body = loading ? (
             }`
         : "Connect your wallet to see your supplies, borrowings, and open positions."}
       <Widget
-        src={`${config.ownerId}/widget/AAVE.Card.Markets`}
+        src={`${config.ownerId}/widget/Lendle.Card.Markets`}
         props={{
           config,
           markets: state.markets,
@@ -935,11 +935,11 @@ const body = loading ? (
   </>
 ) : (
   <>
-    <Widget src={`${config.ownerId}/widget/AAVE.Header`} props={{ config }} />
+    <Widget src={`${config.ownerId}/widget/Lendle.Header`} props={{ config }} />
     <Body>
       <FlexContainer>
         {/* <Widget
-          src={`${config.ownerId}/widget/AAVE.NetworkSwitcher`}
+          src={`${config.ownerId}/widget/Lendle.NetworkSwitcher`}
           props={{
             chainId: state.chainId,
             config,
@@ -949,7 +949,7 @@ const body = loading ? (
           }}
         /> */}
         <Widget
-          src={`${config.ownerId}/widget/AAVE.HeroData`}
+          src={`${config.ownerId}/widget/Lendle.HeroData`}
           props={{
             config,
             netWorth: `$ ${
@@ -975,7 +975,7 @@ const body = loading ? (
         />
       </FlexContainer>
       <Widget
-        src={`${config.ownerId}/widget/AAVE.TabSwitcher`}
+        src={`${config.ownerId}/widget/Lendle.TabSwitcher`}
         props={{
           config,
           select: state.selectTab,
@@ -985,7 +985,7 @@ const body = loading ? (
       {state.selectTab === "supply" && (
         <>
           <Widget
-            src={`${config.ownerId}/widget/AAVE.Card.YourSupplies`}
+            src={`${config.ownerId}/widget/Lendle.Card.YourSupplies`}
             props={{
               config,
               chainId: state.chainId,
@@ -1003,7 +1003,7 @@ const body = loading ? (
             }}
           />
           <Widget
-            src={`${config.ownerId}/widget/AAVE.Card.AssetsToSupply`}
+            src={`${config.ownerId}/widget/Lendle.Card.AssetsToSupply`}
             props={{
               config,
               chainId: state.chainId,
@@ -1025,7 +1025,7 @@ const body = loading ? (
       {state.selectTab === "borrow" && (
         <>
           <Widget
-            src={`${config.ownerId}/widget/AAVE.Card.YourBorrows`}
+            src={`${config.ownerId}/widget/Lendle.Card.YourBorrows`}
             props={{
               config,
               chainId: state.chainId,
@@ -1045,7 +1045,7 @@ const body = loading ? (
             }}
           />
           <Widget
-            src={`${config.ownerId}/widget/AAVE.Card.AssetsToBorrow`}
+            src={`${config.ownerId}/widget/Lendle.Card.AssetsToBorrow`}
             props={{
               config,
               chainId: state.chainId,
@@ -1064,7 +1064,7 @@ const body = loading ? (
       )}
       {state.alertModalText && (
         <Widget
-          src={`${config.ownerId}/widget/AAVE.Modal.AlertModal`}
+          src={`${config.ownerId}/widget/Lendle.Modal.AlertModal`}
           props={{
             config,
             title: "All done!",

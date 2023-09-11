@@ -1,36 +1,35 @@
 const {
   config,
-  yourBorrows,
-  showRepayModal,
-  showBorrowModal,
-  setShowRepayModal,
-  setShowBorrowModal,
-  onActionSuccess,
+  assetsToBorrow,
   chainId,
-  repayETHGas,
-  repayERC20Gas,
+  onActionSuccess,
+  showBorrowModal,
+  setShowBorrowModal,
+  yourSupplies,
   borrowETHGas,
   borrowERC20Gas,
   formatHealthFactor,
 } = props;
 
+if (!assetsToBorrow) {
+  return <div />;
+}
+
+const { debts, ...assetsToBorrowCommonParams } = assetsToBorrow;
+
+function isValid(a) {
+  if (!a) return false;
+  if (isNaN(Number(a))) return false;
+  if (a === "") return false;
+  return true;
+}
 State.init({
   data: undefined,
 });
 
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-  }
-`;
-
 const BorrowButton = ({ data }) => (
   <Widget
-    src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+    src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
     props={{
       config,
       children: "Borrow",
@@ -42,30 +41,33 @@ const BorrowButton = ({ data }) => (
   />
 );
 
-const RepayButton = ({ data }) => (
-  <Widget
-    src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
-    props={{
-      config,
-      children: "Repay",
-      onClick: () => {
-        State.update({ data });
-        setShowRepayModal(true);
-      },
-    }}
-  />
-);
+const showAlert = yourSupplies && yourSupplies.length === 0;
 
-if (!yourBorrows) {
-  return <div />;
-}
+const AlertContainer = styled.div`
+  display: flex;
+  border-radius: 8px;
+  background: rgba(255, 0, 0, 0.12);
 
-const { debts, ...yourBorrowsCommonParams } = yourBorrows;
+  padding: 12px;
+  margin: 12px;
 
+  font-size: 12px;
+
+  @media (min-width: 640px) {
+    font-size: 16px;
+  }
+
+  img {
+    margin-right: 8px;
+    @media (min-width: 640px) {
+      margin-top: 4px;
+    }
+  }
+`;
 return (
   <>
     <Widget
-      src={`${config.ownerId}/widget/AAVE.Card.CardsView`}
+      src={`${config.ownerId}/widget/Lendle.Card.CardsView`}
       props={{
         config,
         style: {
@@ -74,12 +76,31 @@ return (
           border: "1px solid #42307D",
           borderRadius: "12px",
         },
-        title: "Your borrows",
+        title: "Assets to borrow",
         body: (
           <>
+            {showAlert && (
+              <>
+                <Widget
+                  src={`${config.ownerId}/widget/Lendle.Card.Divider`}
+                  props={{ config }}
+                />
+                <AlertContainer>
+                  <img
+                    src={`${config.ipfsPrefix}/bafkreih3npgn6ydscd7mzjrxredamembxhlmdxnw5l4izpfru2rbucvdly`}
+                    width={16}
+                    height={16}
+                  />
+                  <div>
+                    To borrow you need to supply any asset to be used as
+                    collateral.
+                  </div>
+                </AlertContainer>
+              </>
+            )}
             {!debts || debts.length === 0 ? (
               <Widget
-                src={`${config.ownerId}/widget/AAVE.Card.CardEmpty`}
+                src={`${config.ownerId}/widget/Lendle.Card.CardEmpty`}
                 props={{
                   config,
                   children: "Nothing borrowed yet",
@@ -90,20 +111,20 @@ return (
                 {/* mobile view */}
                 {debts.map((row) => (
                   <Widget
-                    src={`${config.ownerId}/widget/AAVE.Card.CardContainer`}
+                    src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
                     props={{
                       children: [
                         <Widget
-                          src={`${config.ownerId}/widget/AAVE.Card.Divider`}
+                          src={`${config.ownerId}/widget/Lendle.Card.Divider`}
                           props={{ config }}
                         />,
                         <Widget
-                          src={`${config.ownerId}/widget/AAVE.Card.CardsBody`}
+                          src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
                           props={{
                             config,
                             children: [
                               <Widget
-                                src={`${config.ownerId}/widget/AAVE.Card.TokenWrapper`}
+                                src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                                 props={{
                                   children: [
                                     <img
@@ -123,27 +144,31 @@ return (
                                 }}
                               />,
                               <Widget
-                                src={`${config.ownerId}/widget/AAVE.Card.CardDataWrapper`}
+                                src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
                                 props={{
                                   children: [
                                     <div className="card-data-row">
-                                      <div className="card-data-key">Debt</div>
+                                      <div className="card-data-key">
+                                        Available to borrow
+                                      </div>
                                       <div className="card-data-value">
                                         <div>
-                                          {Number(row.variableBorrows).toFixed(
+                                          {Number(row.availableBorrows).toFixed(
                                             7
                                           )}
                                         </div>
                                         <div>
                                           ${" "}
                                           {Number(
-                                            row.variableBorrowsUSD
+                                            row.availableBorrowsUSD
                                           ).toFixed(2)}
                                         </div>
                                       </div>
                                     </div>,
                                     <div className="card-data-row">
-                                      <div className="card-data-key">APY</div>
+                                      <div className="card-data-key">
+                                        APY, variable
+                                      </div>
                                       <div className="card-data-value">{`${(
                                         Number(row.variableBorrowAPY) * 100
                                       ).toFixed(2)} %`}</div>
@@ -151,17 +176,12 @@ return (
                                   ],
                                 }}
                               />,
-                              <ButtonGroup>
-                                <RepayButton
-                                  data={{ ...row, ...yourBorrowsCommonParams }}
-                                />
-                                <BorrowButton
-                                  data={{
-                                    ...row,
-                                    ...yourBorrowsCommonParams,
-                                  }}
-                                />
-                              </ButtonGroup>,
+                              <BorrowButton
+                                data={{
+                                  ...row,
+                                  ...assetsToBorrowCommonParams,
+                                }}
+                              />,
                             ],
                           }}
                         />,
@@ -171,14 +191,19 @@ return (
                 ))}
                 {/* pc view */}
                 <Widget
-                  src={`${config.ownerId}/widget/AAVE.Card.CardsTable`}
+                  src={`${config.ownerId}/widget/Lendle.Card.CardsTable`}
                   props={{
                     config,
-                    headers: ["Asset", "Debt", "APY", ""],
+                    headers: [
+                      "Asset",
+                      "Available to borrow",
+                      "APY, variable",
+                      "",
+                    ],
                     data: debts.map((row) => {
                       return [
                         <Widget
-                          src={`${config.ownerId}/widget/AAVE.Card.TokenWrapper`}
+                          src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                           props={{
                             children: [
                               <img
@@ -194,23 +219,18 @@ return (
                           }}
                         />,
                         <div>
-                          <div>{Number(row.variableBorrows).toFixed(7)}</div>
+                          <div>{Number(row.availableBorrows).toFixed(7)}</div>
                           <div>
-                            $ {Number(row.variableBorrowsUSD).toFixed(2)}
+                            $ {Number(row.availableBorrowsUSD).toFixed(2)}
                           </div>
                         </div>,
                         `${(Number(row.variableBorrowAPY) * 100).toFixed(2)} %`,
-                        <ButtonGroup>
-                          <RepayButton
-                            data={{ ...row, ...yourBorrowsCommonParams }}
-                          />
-                          <BorrowButton
-                            data={{
-                              ...row,
-                              ...yourBorrowsCommonParams,
-                            }}
-                          />
-                        </ButtonGroup>,
+                        <BorrowButton
+                          data={{
+                            ...row,
+                            ...assetsToBorrowCommonParams,
+                          }}
+                        />,
                       ];
                     }),
                   }}
@@ -221,25 +241,9 @@ return (
         ),
       }}
     />
-    {showRepayModal && (
-      <Widget
-        src={`${config.ownerId}/widget/AAVE.Modal.RepayModal`}
-        props={{
-          config,
-          onRequestClose: () => setShowRepayModal(false),
-          data: state.data,
-          onActionSuccess,
-          onlyOneBorrow: debts.length === 1,
-          chainId,
-          repayETHGas,
-          repayERC20Gas,
-          formatHealthFactor,
-        }}
-      />
-    )}
     {showBorrowModal && (
       <Widget
-        src={`${config.ownerId}/widget/AAVE.Modal.BorrowModal`}
+        src={`${config.ownerId}/widget/Lendle.Modal.BorrowModal`}
         props={{
           config,
           onRequestClose: () => setShowBorrowModal(false),

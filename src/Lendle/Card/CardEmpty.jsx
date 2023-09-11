@@ -12,7 +12,7 @@ const CardEmpty = styled.div`
 return (
   <>
     <Widget
-      src={`${config.ownerId}/widget/AAVE.Card.Divider`}
+      src={`${config.ownerId}/widget/Lendle.Card.Divider`}
       props={{ config }}
     />
     <CardEmpty>{props.children}</CardEmpty>

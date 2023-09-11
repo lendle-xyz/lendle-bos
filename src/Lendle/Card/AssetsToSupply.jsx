@@ -17,7 +17,7 @@ State.init({
 
 const SupplyButton = ({ data }) => (
   <Widget
-    src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+    src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
     props={{
       config,
       children: "Supply",
@@ -32,7 +32,7 @@ const SupplyButton = ({ data }) => (
 return (
   <>
     <Widget
-      src={`${config.ownerId}/widget/AAVE.Card.CardsView`}
+      src={`${config.ownerId}/widget/Lendle.Card.CardsView`}
       props={{
         config,
         style: {
@@ -45,7 +45,7 @@ return (
         body:
           !assetsToSupply || assetsToSupply.length === 0 ? (
             <Widget
-              src={`${config.ownerId}/widget/AAVE.Card.CardEmpty`}
+              src={`${config.ownerId}/widget/Lendle.Card.CardEmpty`}
               props={{
                 config,
                 children: "Nothing supplied yet",
@@ -55,7 +55,7 @@ return (
             <>
               {/* pcView */}
               <Widget
-                src={`${config.ownerId}/widget/AAVE.Card.CardsTable`}
+                src={`${config.ownerId}/widget/Lendle.Card.CardsTable`}
                 props={{
                   config,
                   headers: [
@@ -67,7 +67,7 @@ return (
                   ],
                   data: assetsToSupply.map((row) => [
                     <Widget
-                      src={`${config.ownerId}/widget/AAVE.Card.TokenWrapper`}
+                      src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                       props={{
                         children: [
                           <img
@@ -107,16 +107,16 @@ return (
               {assetsToSupply.map((row) => {
                 return (
                   <Widget
-                    src={`${config.ownerId}/widget/AAVE.Card.CardContainer`}
+                    src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
                     props={{
                       children: [
                         <Widget
-                          src={`${config.ownerId}/widget/AAVE.Card.CardsBody`}
+                          src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
                           props={{
                             config,
                             children: [
                               <Widget
-                                src={`${config.ownerId}/widget/AAVE.Card.TokenWrapper`}
+                                src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
                                 props={{
                                   children: [
                                     <img
@@ -136,7 +136,7 @@ return (
                                 }}
                               />,
                               <Widget
-                                src={`${config.ownerId}/widget/AAVE.Card.CardDataWrapper`}
+                                src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
                                 props={{
                                   children: [
                                     <div className="card-data-row">
@@ -192,7 +192,7 @@ return (
                           }}
                         />,
                         <Widget
-                          src={`${config.ownerId}/widget/AAVE.Card.Divider`}
+                          src={`${config.ownerId}/widget/Lendle.Card.Divider`}
                           props={{ config }}
                         />,
                       ],
@@ -206,7 +206,7 @@ return (
     />
     {showSupplyModal && (
       <Widget
-        src={`${config.ownerId}/widget/AAVE.Modal.SupplyModal`}
+        src={`${config.ownerId}/widget/Lendle.Modal.SupplyModal`}
         props={{
           config,
           onRequestClose: () => setShowSupplyModal(false),

@@ -77,7 +77,7 @@ const WhiteTexture = styled.div`
 const GreenTexture = styled.div`
   font-size: 14px;
   font-weight: bold;
-  color: #12B76A;
+  color: #12b76a;
 `;
 
 const TransactionOverviewContainer = styled.div`
@@ -108,7 +108,7 @@ const Input = styled.input`
 `;
 
 const Max = styled.span`
-  color: #9E77ED;
+  color: #9e77ed;
   cursor: pointer;
 `;
 
@@ -384,21 +384,21 @@ const disabled = false;
 
 return (
   <Widget
-    src={`${config.ownerId}/widget/AAVE.Modal.BaseModal`}
+    src={`${config.ownerId}/widget/Lendle.Modal.BaseModal`}
     props={{
       title: `Withdraw ${symbol}`,
       onRequestClose: props.onRequestClose,
       children: (
         <WithdrawContainer>
           <Widget
-            src={`${config.ownerId}/widget/AAVE.Modal.RoundedCard`}
+            src={`${config.ownerId}/widget/Lendle.Modal.RoundedCard`}
             props={{
               title: "Amount",
               config,
               children: (
                 <>
                   <Widget
-                    src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                    src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                     props={{
                       left: (
                         <TokenTexture>
@@ -425,7 +425,7 @@ return (
                     }}
                   />
                   <Widget
-                    src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                    src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                     props={{
                       left: <GrayTexture>${state.amountInUSD}</GrayTexture>,
                       right: (
@@ -448,14 +448,14 @@ return (
             }}
           />
           <Widget
-            src={`${config.ownerId}/widget/AAVE.Modal.RoundedCard`}
+            src={`${config.ownerId}/widget/Lendle.Modal.RoundedCard`}
             props={{
               title: "Transaction Overview",
               config,
               children: (
                 <TransactionOverviewContainer>
                   <Widget
-                    src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                    src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                     props={{
                       left: <PurpleTexture>Remaining Supply</PurpleTexture>,
                       right: (
@@ -466,7 +466,7 @@ return (
                     }}
                   />
                   <Widget
-                    src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                    src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                     props={{
                       left: <PurpleTexture>Health Factor</PurpleTexture>,
                       right: (
@@ -492,12 +492,12 @@ return (
             }}
           />
           <Widget
-            src={`${config.ownerId}/widget/AAVE.GasEstimation`}
+            src={`${config.ownerId}/widget/Lendle.GasEstimation`}
             props={{ gas: state.gas, config }}
           />
           {state.needApprove && symbol === config.nativeCurrency.symbol && (
             <Widget
-              src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+              src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
               props={{
                 config,
                 loading: state.loading,
@@ -537,7 +537,7 @@ return (
           )}
           {!(state.needApprove && symbol === config.nativeCurrency.symbol) && (
             <Widget
-              src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+              src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
               props={{
                 config,
                 loading: state.loading,

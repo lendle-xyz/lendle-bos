@@ -361,21 +361,21 @@ update();
 return (
   <>
     <Widget
-      src={`${config.ownerId}/widget/AAVE.Modal.BaseModal`}
+      src={`${config.ownerId}/widget/Lendle.Modal.BaseModal`}
       props={{
         title: `Borrow ${symbol}`,
         onRequestClose: onRequestClose,
         children: (
           <BorrowContainer>
             <Widget
-              src={`${config.ownerId}/widget/AAVE.Modal.RoundedCard`}
+              src={`${config.ownerId}/widget/Lendle.Modal.RoundedCard`}
               props={{
                 title: "Amount",
                 config,
                 children: (
                   <>
                     <Widget
-                      src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                      src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                       props={{
                         left: (
                           <TokenTexture>
@@ -402,7 +402,7 @@ return (
                       }}
                     />
                     <Widget
-                      src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                      src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                       props={{
                         left: <GrayTexture>${state.amountInUSD}</GrayTexture>,
                         right: (
@@ -428,14 +428,14 @@ return (
               }}
             />
             <Widget
-              src={`${config.ownerId}/widget/AAVE.Modal.RoundedCard`}
+              src={`${config.ownerId}/widget/Lendle.Modal.RoundedCard`}
               props={{
                 title: "Transaction Overview",
                 config,
                 children: (
                   <TransactionOverviewContainer>
                     <Widget
-                      src={`${config.ownerId}/widget/AAVE.Modal.FlexBetween`}
+                      src={`${config.ownerId}/widget/Lendle.Modal.FlexBetween`}
                       props={{
                         left: <PurpleTexture>Health Factor</PurpleTexture>,
                         right: (
@@ -462,12 +462,12 @@ return (
               }}
             />
             <Widget
-              src={`${config.ownerId}/widget/AAVE.GasEstimation`}
+              src={`${config.ownerId}/widget/Lendle.GasEstimation`}
               props={{ gas: state.gas, config }}
             />
             {state.needApprove && symbol === config.nativeCurrency.symbol && (
               <Widget
-                src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+                src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
                 props={{
                   config,
                   loading: state.loading,
@@ -509,7 +509,7 @@ return (
               state.needApprove && symbol === config.nativeCurrency.symbol
             ) && (
               <Widget
-                src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+                src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
                 props={{
                   config,
                   children: `Borrow ${symbol}`,

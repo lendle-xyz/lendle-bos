@@ -29,7 +29,7 @@ const Right = () => (
 
 return (
   <Widget
-    src={`${config.ownerId}/widget/AAVE.Modal.BaseModal`}
+    src={`${config.ownerId}/widget/Lendle.Modal.BaseModal`}
     props={{
       title: "",
       onRequestClose,
@@ -39,7 +39,7 @@ return (
           <Title>{props.title}</Title>
           <Description>{props.description}</Description>
           <Widget
-            src={`${config.ownerId}/widget/AAVE.PrimaryButton`}
+            src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
             props={{
               config,
               children: "Ok, Close",
