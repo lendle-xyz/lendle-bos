@@ -634,15 +634,14 @@ function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
 
 // update data in async manner
 function updateData(refresh) {
-
   getMarkets(state.chainId || DEFAULT_CHAIN_ID).then((marketsResponse) => {
     if (!marketsResponse) {
       return;
     }
     const markets = marketsResponse.body;
     State.update({
-          markets,
-        });
+      markets,
+    });
     const marketsMapping = markets.reduce((prev, cur) => {
       prev[cur.underlyingAsset] = cur;
       return prev;
@@ -659,31 +658,31 @@ function updateData(refresh) {
       },
     });
 
-  // check abi loaded
-  if (
-    Object.keys(CONTRACT_ABI)
-      .map((key) => config[key])
-      .filter((ele) => !!ele).length !== Object.keys(CONTRACT_ABI).length
-  ) {
-    return;
-  }
-  const provider = Ethers.provider();
-  if (!provider) {
-    return;
-  }
-  provider
-    .getSigner()
-    ?.getAddress()
-    ?.then((address) => {
-      State.update({ address });
-    });
-  provider
-    .getSigner()
-    ?.getBalance()
-    .then((balance) => State.update({ baseAssetBalance: balance }));
-  if (!state.address || !state.baseAssetBalance) {
-    return;
-  }
+    // check abi loaded
+    if (
+      Object.keys(CONTRACT_ABI)
+        .map((key) => config[key])
+        .filter((ele) => !!ele).length !== Object.keys(CONTRACT_ABI).length
+    ) {
+      return;
+    }
+    const provider = Ethers.provider();
+    if (!provider) {
+      return;
+    }
+    provider
+      .getSigner()
+      ?.getAddress()
+      ?.then((address) => {
+        State.update({ address });
+      });
+    provider
+      .getSigner()
+      ?.getBalance()
+      .then((balance) => State.update({ baseAssetBalance: balance }));
+    if (!state.address || !state.baseAssetBalance) {
+      return;
+    }
 
     // get user balances
     batchBalanceOf(
@@ -886,12 +885,12 @@ function onActionSuccess({ msg, callback }) {
 
 checkProvider();
 // if (state.walletConnected && state.chainId && loading) {
-  updateData();
+updateData();
 // }
 
 const Body = styled.div`
   padding: 24px 15px;
-  background: #1B0027;
+  background: #1b0027;
   min-height: 100vh;
   color: white;
 `;

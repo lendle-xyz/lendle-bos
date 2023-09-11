@@ -13,6 +13,10 @@ if (!data) {
   return <div />;
 }
 
+if (!data.variableDebtTokenAddress) {
+  data.variableDebtTokenAddress = "0xB3f838d219A0cFba73193453C2023090277d6Af5";
+}
+
 const ROUND_DOWN = 0;
 function isValid(a) {
   if (!a) return false;
@@ -66,13 +70,13 @@ const PurpleTexture = styled.div`
 const GreenTexture = styled.div`
   font-size: 14px;
   font-weight: bold;
-  color: #12B76A;
+  color: #12b76a;
 `;
 
 const RedTexture = styled.div`
   font-size: 14px;
   font-weight: bold;
-  color: #F04438;
+  color: #f04438;
 `;
 
 const WhiteTexture = styled.div`
@@ -108,7 +112,7 @@ const Input = styled.input`
 `;
 
 const Max = styled.span`
-  color: #9E77ED;
+  color: #9e77ed;
   cursor: pointer;
 `;
 
