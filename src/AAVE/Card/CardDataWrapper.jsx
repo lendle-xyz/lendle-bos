@@ -10,7 +10,7 @@ const DataWrapper = styled.div`
     justify-content: space-between;
   }
   .card-data-key {
-    color: #777790;
+    color: hsla(0,0%,100%,.6);
     font-size: 15px;
     font-weight: 500;
   }
@@ -18,6 +18,9 @@ const DataWrapper = styled.div`
     font-size: 15px;
     font-weight: bold;
     text-align: right;
+  }
+  .card-data-usd-price {
+    color: hsla(0,0%,100%,.6);
   }
 `;
 

@@ -327,6 +327,8 @@ function getMarkets(chainId) {
         100,
       availableLiquidityUSD: market.totalValueLockedUSD,
       availableLiquidity: market.totalValueLockedUSD,
+      totalBorrowBalanceUSD: market.totalBorrowBalanceUSD,
+      totalDepositBalanceUSD: market.totalDepositBalanceUSD,
     }));
     return {
       body: mappedMarkets,
@@ -562,6 +564,7 @@ State.init({
   address: undefined,
   baseAssetBalance: undefined,
   selectTab: "supply", // supply | borrow
+  markets: undefined,
 });
 
 const loading =
@@ -631,6 +634,31 @@ function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
 
 // update data in async manner
 function updateData(refresh) {
+
+  getMarkets(state.chainId || DEFAULT_CHAIN_ID).then((marketsResponse) => {
+    if (!marketsResponse) {
+      return;
+    }
+    const markets = marketsResponse.body;
+    State.update({
+          markets,
+        });
+    const marketsMapping = markets.reduce((prev, cur) => {
+      prev[cur.underlyingAsset] = cur;
+      return prev;
+    }, {});
+
+    const nativeMarket = markets.find(
+      (market) => market.symbol === config.nativeWrapCurrency.symbol
+    );
+    markets.push({
+      ...nativeMarket,
+      ...{
+        ...config.nativeCurrency,
+        supportPermit: true,
+      },
+    });
+
   // check abi loaded
   if (
     Object.keys(CONTRACT_ABI)
@@ -656,27 +684,6 @@ function updateData(refresh) {
   if (!state.address || !state.baseAssetBalance) {
     return;
   }
-
-  getMarkets(state.chainId).then((marketsResponse) => {
-    if (!marketsResponse) {
-      return;
-    }
-    const markets = marketsResponse.body;
-    const marketsMapping = markets.reduce((prev, cur) => {
-      prev[cur.underlyingAsset] = cur;
-      return prev;
-    }, {});
-
-    const nativeMarket = markets.find(
-      (market) => market.symbol === config.nativeWrapCurrency.symbol
-    );
-    markets.push({
-      ...nativeMarket,
-      ...{
-        ...config.nativeCurrency,
-        supportPermit: true,
-      },
-    });
 
     // get user balances
     batchBalanceOf(
@@ -878,9 +885,9 @@ function onActionSuccess({ msg, callback }) {
 }
 
 checkProvider();
-if (state.walletConnected && state.chainId && loading) {
+// if (state.walletConnected && state.chainId && loading) {
   updateData();
-}
+// }
 
 const Body = styled.div`
   padding: 24px 15px;
@@ -906,7 +913,25 @@ const body = loading ? (
           : `Please switch network to ${
               getNetworkConfig(DEFAULT_CHAIN_ID).chainName
             }`
-        : "Need to connect wallet first."}
+        : "Connect your wallet to see your supplies, borrowings, and open positions."}
+      <Widget
+        src={`${config.ownerId}/widget/AAVE.Card.Markets`}
+        props={{
+          config,
+          markets: state.markets,
+          // chainId: state.chainId,
+          // showVestModal: state.showVestModal,
+          // setShowVestModal: (isShow) =>
+          //   State.update({ showVestModal: isShow }),
+          // onActionSuccess,
+          // healthFactor: formatHealthFactor(
+          //   state.assetsToBorrow.healthFactor
+          // ),
+          // formatHealthFactor,
+          // depositETHGas,
+          // depositERC20Gas,
+        }}
+      />
     </Body>
   </>
 ) : (

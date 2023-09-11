@@ -21,6 +21,7 @@ const CardsTable = styled.div`
   }
   tr td {
     padding: 15px 0;
+    border-top: 1px solid #42307D;
   }
 
   display: none;
