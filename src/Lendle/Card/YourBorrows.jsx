@@ -1,6 +1,7 @@
 const {
   config,
   yourBorrows,
+  yourSupplies,
   showRepayModal,
   showBorrowModal,
   setShowRepayModal,
@@ -28,7 +29,6 @@ const ButtonGroup = styled.div`
     flex-direction: row;
   }
 `;
-
 const BorrowButton = ({ data }) => (
   <Widget
     src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
@@ -229,7 +229,11 @@ return (
         props={{
           config,
           onRequestClose: () => setShowRepayModal(false),
-          data: state.data,
+          data: {
+            ...state.data,
+            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
+          },
           onActionSuccess,
           onlyOneBorrow: debts.length === 1,
           chainId,
@@ -245,7 +249,11 @@ return (
         props={{
           config,
           onRequestClose: () => setShowBorrowModal(false),
-          data: state.data,
+          data: {
+            ...state.data,
+            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
+          },
           onActionSuccess,
           chainId,
           borrowETHGas,

@@ -2,6 +2,7 @@ const {
   config,
   chainId,
   yourSupplies,
+  yourBorrows,
   onActionSuccess,
   showWithdrawModal,
   setShowWithdrawModal,
@@ -44,7 +45,7 @@ return (
         },
         title: "Your supplies",
         body:
-          !yourSupplies || yourSupplies.length === 0 ? (
+          !yourSupplies?.deposits || yourSupplies.deposits.length === 0 ? (
             <Widget
               src={`${config.ownerId}/widget/Lendle.Card.CardEmpty`}
               props={{
@@ -55,7 +56,7 @@ return (
           ) : (
             <>
               {/* mobileView */}
-              {yourSupplies.map((row) => hideTokens.includes(row.symbol) ? [] : (
+              {yourSupplies.deposits.map((row) => hideTokens.includes(row.symbol) ? [] : (
                 <Widget
                   src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
                   props={{
@@ -136,7 +137,7 @@ return (
                 props={{
                   config,
                   headers: ["Asset", "Supply Balance", "Supply APY", ""],
-                  data: yourSupplies.map((row) => {
+                  data: yourSupplies.deposits.map((row) => {
                     if (hideTokens.includes(row.symbol)) {return []}
                     return [
                       <Widget
@@ -179,7 +180,9 @@ return (
           chainId,
           data: {
             ...state.data,
-            healthFactor,
+            healthFactor: yourBorrows.healthFactor,
+            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
           },
           onActionSuccess,
           withdrawETHGas,

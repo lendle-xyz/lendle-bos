@@ -42,7 +42,7 @@ const BorrowButton = ({ data }) => (
   />
 );
 
-const showAlert = yourSupplies && yourSupplies.length === 0;
+const showAlert = yourSupplies?.deposit && yourSupplies.deposit.length === 0;
 
 const AlertContainer = styled.div`
   display: flex;
@@ -249,7 +249,11 @@ return (
         props={{
           config,
           onRequestClose: () => setShowBorrowModal(false),
-          data: state.data,
+          data: {
+            ...state.data,
+            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
+          },
           onActionSuccess,
           chainId,
           borrowETHGas,

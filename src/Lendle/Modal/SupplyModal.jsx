@@ -33,6 +33,9 @@ const {
   name: tokenName,
   healthFactor,
   supportPermit,
+  liquidationThreshold,
+  userTotalAvailableLiquidityUSD,
+  userTotalDebtUSD,
 } = data;
 
 const WithdrawContainer = styled.div`
@@ -437,10 +440,6 @@ function depositErc20(amount) {
  * @param {string} amount amount in USD with 2 fixed decimals
  * @returns
  */
-function getNewHealthFactor(chainId, address, asset, action, amount) {
-  const url = `${config.AAVE_API_BASE_URL}/${chainId}/health/${address}`;
-  return asyncFetch(`${url}?asset=${asset}&action=${action}&amount=${amount}`);
-}
 
 const maxValue =
   symbol === config.nativeCurrency.symbol
@@ -458,25 +457,15 @@ function debounce(fn, wait) {
   };
 }
 
-const updateNewHealthFactor = debounce(() => {
-  State.update({ newHealthFactor: "-" });
+function getNewHealthFactor() {
+  const newTotalAvailableLiquidityUSD = userTotalAvailableLiquidityUSD + Number(state.amountInUSD) * liquidationThreshold / 100
+  return (newTotalAvailableLiquidityUSD / userTotalDebtUSD).toFixed(2);
+};
 
-  Ethers.provider()
-    .getSigner()
-    .getAddress()
-    .then((address) => {
-      getNewHealthFactor(
-        chainId,
-        address,
-        underlyingAsset,
-        "deposit",
-        state.amountInUSD
-      ).then((response) => {
-        const newHealthFactor = formatHealthFactor(response.body);
-        State.update({ newHealthFactor });
-      });
-    });
-}, 1000);
+const updateNewHealthFactor = () => {
+  const newHealthFactor = formatHealthFactor(getNewHealthFactor());
+  State.update({ newHealthFactor });
+};
 
 const disabled =
   !state.amount || !isValid(state.amount) || Number(state.amount) === 0;
@@ -608,15 +597,19 @@ return (
                         left: <PurpleTexture>Health Factor</PurpleTexture>,
                         right: (
                           <div style={{ textAlign: "right" }}>
-                            <GreenTexture>
-                              {healthFactor}
+                            <WhiteTexture style={{ display: "flex",  justifyContent: "flex-end"}}>
+                              <div style={healthFactor <= 1.1 ? { color: "#f04438" } : healthFactor < 1.5 ? { color: "#F79009" } : { color: "#12b76a" }}>
+                                {healthFactor}
+                              </div>
                               <img
                                 src={`${config.ipfsPrefix}/bafkreiesqu5jyvifklt2tfrdhv6g4h6dubm2z4z4dbydjd6if3bdnitg7q`}
                                 width={16}
                                 height={16}
-                              />{" "}
-                              {state.newHealthFactor}
-                            </GreenTexture>
+                              />
+                              <div style={state.newHealthFactor <= 1.1 ? { color: "#f04438" } : state.newHealthFactor < 1.5 ? { color: "#F79009" } : { color: "#12b76a" }}>
+                                {" "}{state.newHealthFactor}
+                              </div>
+                            </WhiteTexture>
                             <WhiteTexture>
                               Liquidation at &lt;{" "}
                               {config.FIXED_LIQUIDATION_VALUE}

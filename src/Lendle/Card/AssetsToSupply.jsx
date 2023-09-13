@@ -10,6 +10,8 @@ const {
   depositETHGas,
   depositERC20Gas,
   hideTokens,
+  yourSupplies,
+  yourBorrows,
 } = props;
 
 State.init({
@@ -214,7 +216,9 @@ return (
           onRequestClose: () => setShowSupplyModal(false),
           data: {
             ...state.data,
-            healthFactor,
+            healthFactor: yourBorrows.healthFactor,
+            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
           },
           onActionSuccess,
           chainId,

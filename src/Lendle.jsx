@@ -330,6 +330,9 @@ function getMarkets(chainId) {
       availableLiquidity: market.totalValueLockedUSD,
       totalBorrowBalanceUSD: market.totalBorrowBalanceUSD,
       totalDepositBalanceUSD: market.totalDepositBalanceUSD,
+      maximumLTV: market.maximumLTV,
+      liquidationThreshold: market.liquidationThreshold,
+      liquidationPenalty: market.liquidationPenalty,
     }));
     return {
       body: mappedMarkets,
@@ -364,6 +367,7 @@ function getUserBalances(chainId, account, tokens) {
 //   underlyingBalanceUSD: string,
 // }
 // returns UserDeposit[]
+
 function getUserDeposits(chainId, address) {
   const query = `
   query GetAccountReservesData {
@@ -427,6 +431,7 @@ function getUserDeposits(chainId, address) {
 //   healthFactor: string,
 //   netWorthUSD: string,
 //   availableBorrowsUSD: string,
+//   userTotalDebtUSD: number,
 //   debts: UserDebt[],
 // }
 // interface UserDebt {
@@ -475,6 +480,7 @@ function getUserDebts(chainId, address) {
           healthFactor: "∞",
           netWorthUSD: "0",
           availableBorrowsUSD: "0",
+          userTotalDebtUSD: 0,
           debts: [],
         },
       };
@@ -501,6 +507,7 @@ function getUserDebts(chainId, address) {
     const healthFactor = "∞";
     const netWorthUSD = "0";
     const availableBorrowsUSD = "2";
+    const userTotalDebtUSD = 0;
     const debts = mappedPositions;
 
     return {
@@ -508,6 +515,7 @@ function getUserDebts(chainId, address) {
         healthFactor,
         netWorthUSD,
         availableBorrowsUSD,
+        userTotalDebtUSD,
         debts,
       },
     };
@@ -562,7 +570,7 @@ State.init({
 });
 
 const loading =
-  !state.assetsToSupply || !state.yourSupplies || !state.assetsToBorrow;
+  !state.assetsToSupply || !state.yourSupplies?.deposits || !state.assetsToBorrow;
 
 // Import functions to state.imports
 function importFunctions(imports) {
@@ -600,6 +608,24 @@ function calculateAvailableBorrows({
     ? Big(availableBorrowsUSD).div(marketReferencePriceInUsd).toFixed()
     : Number(0).toFixed();
 }
+
+function calculateUserTotalDebtUSD(debts) {
+  return debts.reduce((acc, debt) => (
+    isValid(debt.variableBorrowsUSD) ? acc + Number(debt.variableBorrowsUSD) : acc
+  ), 0)
+}
+
+function calculateUserTotalAvailableLiquidityUSD(deposits) {
+  return deposits.reduce((acc, deposit) => (
+    isValid(deposit.userAvailableLiquidityUSD) ? acc + Number(deposit.userAvailableLiquidityUSD) : acc
+  ), 0)
+}
+
+function getHealthFactor() { 
+  const healthFactor = (state.yourSupplies.userTotalAvailableLiquidityUSD / state.yourBorrows.userTotalDebtUSD).toFixed(2);
+  return formatHealthFactor(healthFactor);
+};
+
 
 function bigMin(_a, _b) {
   const a = Big(_a);
@@ -727,7 +753,7 @@ function updateData(refresh) {
 }
 
 function updateUserSupplies(marketsMapping, refresh) {
-  const prevYourSupplies = state.yourSupplies;
+  const prevYourSupplies = state.yourSupplies?.deposits;
   getUserDeposits(state.chainId, state.address).then((userDepositsResponse) => {
     if (!userDepositsResponse) {
       return;
@@ -735,7 +761,7 @@ function updateUserSupplies(marketsMapping, refresh) {
     const userDeposits = userDepositsResponse.body.filter(
       (row) => Number(row.underlyingBalance) !== 0
     );
-    const yourSupplies = userDeposits.map((userDeposit) => {
+    const deposits = userDeposits.map((userDeposit) => {
       const market = marketsMapping[userDeposit.underlyingAsset];
       return {
         ...market,
@@ -746,11 +772,15 @@ function updateUserSupplies(marketsMapping, refresh) {
               supportPermit: true,
             }
           : {}),
-      };
-    });
-
+        userAvailableLiquidityUSD: Number(userDeposit.underlyingBalance) * Number(market.liquidationThreshold) / 100,
+        };
+      });
+      
     State.update({
-      yourSupplies,
+      yourSupplies: {
+        deposits: deposits,
+        userTotalAvailableLiquidityUSD: calculateUserTotalAvailableLiquidityUSD(deposits)
+      },
     });
 
     if (
@@ -785,59 +815,60 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       return;
     }
     const userDebts = userDebtsResponse.body;
+    const debts = markets
+      .map((market) => {
+        const userDebt = userDebts.debts.find(
+          (debt) => debt.underlyingAsset === market.underlyingAsset
+        );
+
+        if (!market) {
+          return;
+        }
+        const { availableLiquidityUSD } = market;
+        const availableBorrowsUSD = bigMin(
+          userDebts.availableBorrowsUSD,
+          availableLiquidityUSD
+        )
+          .times(ACTUAL_BORROW_AMOUNT_RATE)
+          .toFixed();
+        const assetsToSupplyMapKey =
+          market.symbol === config.nativeWrapCurrency.symbol
+            ? NATIVE_SYMBOL_ADDRESS_MAP_KEY
+            : userDebt.underlyingAsset;
+        return {
+          ...market,
+          ...userDebt,
+          // ...(market.symbol === config.nativeWrapCurrency.symbol
+          //   ? {
+          //       ...config.nativeCurrency,
+          //       supportPermit: true,
+          //     }
+          //   : {}),
+          availableBorrows: calculateAvailableBorrows({
+            availableBorrowsUSD,
+            marketReferencePriceInUsd: market.marketReferencePriceInUsd,
+          }),
+          availableBorrowsUSD,
+          balance: assetsToSupplyMap[assetsToSupplyMapKey].balance,
+          balanceInUSD: assetsToSupplyMap[assetsToSupplyMapKey].balanceInUSD,
+          borrowingEnabled: true,
+        };
+      })
+      .filter((asset) => !!asset)
+      .sort((asset1, asset2) => {
+        const availableBorrowsUSD1 = Number(asset1.availableBorrowsUSD);
+        const availableBorrowsUSD2 = Number(asset2.availableBorrowsUSD);
+        if (availableBorrowsUSD1 !== availableBorrowsUSD2)
+          return availableBorrowsUSD2 - availableBorrowsUSD1;
+        return asset1.symbol.localeCompare(asset2.symbol);
+      })
+      .filter((asset) => {
+        return asset.borrowingEnabled;
+      });
     const assetsToBorrow = {
       ...userDebts,
-      healthFactor: formatHealthFactor(userDebts.healthFactor),
-      debts: markets
-        .map((market) => {
-          const userDebt = userDebts.debts.find(
-            (debt) => debt.underlyingAsset === market.underlyingAsset
-          );
-
-          if (!market) {
-            return;
-          }
-          const { availableLiquidityUSD } = market;
-          const availableBorrowsUSD = bigMin(
-            userDebts.availableBorrowsUSD,
-            availableLiquidityUSD
-          )
-            .times(ACTUAL_BORROW_AMOUNT_RATE)
-            .toFixed();
-          const assetsToSupplyMapKey =
-            market.symbol === config.nativeWrapCurrency.symbol
-              ? NATIVE_SYMBOL_ADDRESS_MAP_KEY
-              : userDebt.underlyingAsset;
-          return {
-            ...market,
-            ...userDebt,
-            // ...(market.symbol === config.nativeWrapCurrency.symbol
-            //   ? {
-            //       ...config.nativeCurrency,
-            //       supportPermit: true,
-            //     }
-            //   : {}),
-            availableBorrows: calculateAvailableBorrows({
-              availableBorrowsUSD,
-              marketReferencePriceInUsd: market.marketReferencePriceInUsd,
-            }),
-            availableBorrowsUSD,
-            balance: assetsToSupplyMap[assetsToSupplyMapKey].balance,
-            balanceInUSD: assetsToSupplyMap[assetsToSupplyMapKey].balanceInUSD,
-            borrowingEnabled: true,
-          };
-        })
-        .filter((asset) => !!asset)
-        .sort((asset1, asset2) => {
-          const availableBorrowsUSD1 = Number(asset1.availableBorrowsUSD);
-          const availableBorrowsUSD2 = Number(asset2.availableBorrowsUSD);
-          if (availableBorrowsUSD1 !== availableBorrowsUSD2)
-            return availableBorrowsUSD2 - availableBorrowsUSD1;
-          return asset1.symbol.localeCompare(asset2.symbol);
-        })
-        .filter((asset) => {
-          return asset.borrowingEnabled;
-        }),
+      userTotalDebtUSD: calculateUserTotalDebtUSD(debts),
+      debts: debts,
     };
     const yourBorrows = {
       ...assetsToBorrow,
@@ -851,6 +882,14 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
     State.update({
       yourBorrows,
       assetsToBorrow,
+    });
+
+    // update health factor
+    State.update({
+      yourBorrows: {
+        ...state.yourBorrows,
+        healthFactor: getHealthFactor(),
+      }
     });
 
     if (
@@ -918,10 +957,6 @@ const body = loading ? (
           // setShowVestModal: (isShow) =>
           //   State.update({ showVestModal: isShow }),
           // onActionSuccess,
-          // healthFactor: formatHealthFactor(
-          //   state.assetsToBorrow.healthFactor
-          // ),
-          // formatHealthFactor,
           // depositETHGas,
           // depositERC20Gas,
         }}
@@ -961,7 +996,7 @@ const body = loading ? (
                   : Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
                 : "-"
             }%`,
-            healthFactor: formatHealthFactor(state.assetsToBorrow.healthFactor),
+            healthFactor: state.yourBorrows.healthFactor,
             showHealthFactor:
               state.yourBorrows &&
               state.yourBorrows.debts &&
@@ -984,14 +1019,12 @@ const body = loading ? (
             props={{
               config,
               chainId: state.chainId,
+              yourBorrows: state.yourBorrows,
               yourSupplies: state.yourSupplies,
               showWithdrawModal: state.showWithdrawModal,
               setShowWithdrawModal: (isShow) =>
                 State.update({ showWithdrawModal: isShow }),
               onActionSuccess,
-              healthFactor: formatHealthFactor(
-                state.assetsToBorrow.healthFactor
-              ),
               formatHealthFactor,
               withdrawETHGas,
               withdrawERC20Gas,
@@ -1004,13 +1037,12 @@ const body = loading ? (
               config,
               chainId: state.chainId,
               assetsToSupply: state.assetsToSupply,
+              yourBorrows: state.yourBorrows,
+              yourSupplies: state.yourSupplies,
               showSupplyModal: state.showSupplyModal,
               setShowSupplyModal: (isShow) =>
                 State.update({ showSupplyModal: isShow }),
               onActionSuccess,
-              healthFactor: formatHealthFactor(
-                state.assetsToBorrow.healthFactor
-              ),
               formatHealthFactor,
               depositETHGas,
               depositERC20Gas,
@@ -1027,6 +1059,7 @@ const body = loading ? (
               config,
               chainId: state.chainId,
               yourBorrows: state.yourBorrows,
+              yourSupplies: state.yourSupplies,
               showRepayModal: state.showRepayModal,
               setShowRepayModal: (isShow) =>
                 State.update({ showRepayModal: isShow }),
@@ -1049,6 +1082,7 @@ const body = loading ? (
               chainId: state.chainId,
               assetsToBorrow: state.assetsToBorrow,
               showBorrowModal: state.showBorrowModal,
+              yourBorrows: state.yourBorrows,
               yourSupplies: state.yourSupplies,
               setShowBorrowModal: (isShow) =>
                 State.update({ showBorrowModal: isShow }),
