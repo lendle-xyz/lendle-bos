@@ -6,7 +6,6 @@ const {
   onActionSuccess,
   showWithdrawModal,
   setShowWithdrawModal,
-  healthFactor,
   withdrawETHGas,
   withdrawERC20Gas,
   formatHealthFactor,
@@ -16,6 +15,33 @@ const {
 State.init({
   data: undefined,
 });
+
+function getInformers() {
+  return [
+    {
+      title: "Balance",
+      data: yourSupplies?.userTotalDepositUSD
+        ? `$ ${(yourSupplies.userTotalDepositUSD).toFixed(2)}`
+        : "-",
+    },
+    {
+      title: "APY",
+      data: yourSupplies?.userAPYSupplies
+        ? `${(yourSupplies.userAPYSupplies).toFixed(4) * 100} %`
+        : "-",
+    },
+    {
+      title: "Collateral",
+      data: yourSupplies?.userTotalCollateralUSD
+        ? `$ ${(yourSupplies.userTotalCollateralUSD).toFixed(2)}`
+        : "-",
+    },
+    {
+      title: "Health factor",
+      data: yourBorrows?.healthFactor ? yourBorrows.healthFactor : "-",
+    },
+  ];
+};
 
 const WithdrawButton = ({ data }) => (
   <Widget
@@ -44,6 +70,17 @@ return (
           borderRadius: "12px",
         },
         title: "Your supplies",
+        headerData:
+          !yourSupplies?.deposits || yourSupplies.deposits.length === 0 ? (
+            null
+          ) : (
+            getInformers().map(({title, data}) => (
+              <Widget
+                src={`${config.ownerId}/widget/Lendle.Card.Informer`}
+                props={{config, title, data}}
+              />
+            ))
+          ),
         body:
           !yourSupplies?.deposits || yourSupplies.deposits.length === 0 ? (
             <Widget

@@ -42,7 +42,7 @@ return (
           border: "1px solid #42307D",
           borderRadius: "12px",
         },
-        title: "",
+        title: "Markets overview",
         body:
           !markets || markets.length < 1 ? (
             <Widget

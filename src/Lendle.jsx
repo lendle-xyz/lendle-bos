@@ -387,6 +387,7 @@ function getUserDeposits(chainId, address) {
             decimals
             id
           }
+          outputTokenPriceUSD
         }
         isCollateral
       }
@@ -410,6 +411,10 @@ function getUserDeposits(chainId, address) {
         const formattedBalance = Big(position.balance)
           .div(Big(10).pow(position.market.inputToken.decimals))
           .toString();
+        const formattedBalanceUSD = Big(position.balance)
+          .div(Big(10).pow(position.market.inputToken.decimals))
+          .mul(position.market.outputTokenPriceUSD)
+          .toString();
         return {
           underlyingAsset: position.market.inputToken.id,
           name: position.market.name,
@@ -418,7 +423,7 @@ function getUserDeposits(chainId, address) {
           scaledATokenBalance: position.balance,
           usageAsCollateralEnabledOnUser: position.isCollateral,
           underlyingBalance: formattedBalance,
-          underlyingBalanceUSD: formattedBalance,
+          underlyingBalanceUSD: formattedBalanceUSD,
         };
       });
     return {
@@ -463,6 +468,7 @@ function getUserDebts(chainId, address) {
             decimals
             id
           }
+          outputTokenPriceUSD
         }
         isCollateral
       }
@@ -493,6 +499,10 @@ function getUserDebts(chainId, address) {
         const formattedBalance = Big(position.balance)
           .div(Big(10).pow(position.market.inputToken.decimals))
           .toString();
+        const formattedBalanceUSD = Big(position.balance)
+          .div(Big(10).pow(position.market.inputToken.decimals))
+          .mul(position.market.outputTokenPriceUSD)
+          .toString();
         return {
           underlyingAsset: position.market.inputToken.id,
           name: position.market.name,
@@ -500,7 +510,7 @@ function getUserDebts(chainId, address) {
           usageAsCollateralEnabledOnUser: position.isCollateral,
           scaledVariableDebt: formattedBalance,
           variableBorrows: formattedBalance,
-          variableBorrowsUSD: formattedBalance,
+          variableBorrowsUSD: formattedBalanceUSD,
         };
       });
 
@@ -600,6 +610,7 @@ function checkProvider() {
   }
 }
 
+//get calculated indicators
 function calculateAvailableBorrows({
   availableBorrowsUSD,
   marketReferencePriceInUsd,
@@ -609,17 +620,37 @@ function calculateAvailableBorrows({
     : Number(0).toFixed();
 }
 
-function calculateUserTotalDebtUSD(debts) {
-  return debts.reduce((acc, debt) => (
-    isValid(debt.variableBorrowsUSD) ? acc + Number(debt.variableBorrowsUSD) : acc
+function calculateTotalIndicator(data, indicator) {
+  return data.reduce((acc, item) => (
+    isValid(item[indicator])
+      ? acc + Number(item[indicator])
+      : acc
   ), 0)
 }
 
-function calculateUserTotalAvailableLiquidityUSD(deposits) {
+function calculateUserTotalCollateralUSD(deposits) {
   return deposits.reduce((acc, deposit) => (
-    isValid(deposit.userAvailableLiquidityUSD) ? acc + Number(deposit.userAvailableLiquidityUSD) : acc
+    isValid(deposit.underlyingBalanceUSD) && deposit.usageAsCollateralEnabledOnUser
+      ? acc + Number(deposit.underlyingBalanceUSD)
+      : acc
   ), 0)
 }
+
+function calculateUserAPYSupplies(deposits) {
+  console.log("deposits", deposits)
+  const totalAPY = deposits.reduce((acc, deposit) => (
+    isValid(deposit.underlyingBalanceUSD) 
+    ? acc + Number(deposit.underlyingBalanceUSD) * deposit.supplyAPY
+    : acc
+  ), 0)
+  console.log("debts", debts)
+  const totalDebts = deposits.reduce((acc, debt) => (
+    isValid(debt.underlyingBalanceUSD)
+    ? acc + Number(debt.underlyingBalanceUSD)
+    : acc
+    ), 0)
+  return totalAPY / totalDebts;
+};
 
 function getHealthFactor() { 
   const healthFactor = (state.yourSupplies.userTotalAvailableLiquidityUSD / state.yourBorrows.userTotalDebtUSD).toFixed(2);
@@ -779,7 +810,10 @@ function updateUserSupplies(marketsMapping, refresh) {
     State.update({
       yourSupplies: {
         deposits: deposits,
-        userTotalAvailableLiquidityUSD: calculateUserTotalAvailableLiquidityUSD(deposits)
+        userTotalAvailableLiquidityUSD: calculateTotalIndicator(deposits, "userAvailableLiquidityUSD"),
+        userTotalDepositUSD: calculateTotalIndicator(deposits, "underlyingBalanceUSD"),
+        userTotalCollateralUSD: calculateUserTotalCollateralUSD(deposits),
+        userAPYSupplies: calculateUserAPYSupplies(deposits),
       },
     });
 
@@ -867,7 +901,7 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       });
     const assetsToBorrow = {
       ...userDebts,
-      userTotalDebtUSD: calculateUserTotalDebtUSD(debts),
+      userTotalDebtUSD: calculateTotalIndicator(debts, "variableBorrowsUSD"),
       debts: debts,
     };
     const yourBorrows = {
@@ -1105,7 +1139,22 @@ const body = loading ? (
             onRequestClose: () => State.update({ alertModalText: false }),
           }}
         />
-      )}
+        )}
+      <Widget
+        src={`${config.ownerId}/widget/Lendle.Card.Markets`}
+        props={{
+          config,
+          markets: state.markets,
+          hideTokens: HIDE_TOKENS_SYMBOL,
+          // chainId: state.chainId,
+          // showVestModal: state.showVestModal,
+          // setShowVestModal: (isShow) =>
+          //   State.update({ showVestModal: isShow }),
+          // onActionSuccess,
+          // depositETHGas,
+          // depositERC20Gas,
+        }}
+      />
     </Body>
   </>
 );
