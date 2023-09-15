@@ -9,6 +9,7 @@ const CardsContainer = styled.div`
 
 const CardsTitle = styled.div`
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   padding: 0 14px;
   color: white;
@@ -18,6 +19,7 @@ const CardsTitle = styled.div`
 
 const InformerContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   padding: 0 14px;
   color: white;
   font-size: 14px;

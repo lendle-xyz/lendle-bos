@@ -2,7 +2,7 @@ const { config, title, data } = props;
 
 const BodyWrapper = styled.div`
   min-height: 28px;
-  margin: 0px 6px;
+  margin: 3px 6px;
   padding: 0 6px;
   border: 1px solid #FFFFFF10;
   border-radius: 4px;
