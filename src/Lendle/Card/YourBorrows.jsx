@@ -20,6 +20,33 @@ State.init({
   data: undefined,
 });
 
+function getInformers() {
+  return [
+    {
+      title: "Balance",
+      data: yourBorrows?.userTotalDebtUSD
+        ? `$ ${(yourBorrows.userTotalDebtUSD).toFixed(2)}`
+        : "-",
+    },
+    {
+      title: "APY",
+      data: yourBorrows?.userAPYBorrows
+        ? `${(yourBorrows.userAPYBorrows).toFixed(4) * 100} %`
+        : "-",
+    },
+    {
+      title: "Borrow Power Used",
+      data: yourBorrows?.borrowPowerUsed
+        ? `${(yourBorrows.borrowPowerUsed).toFixed(4) * 100} %`
+        : "-",
+    },
+    {
+      title: "Health factor",
+      data: yourBorrows?.healthFactor ? yourBorrows.healthFactor : "-",
+    },
+  ];
+};
+
 const ButtonGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -76,6 +103,17 @@ return (
           borderRadius: "12px",
         },
         title: "Your borrows",
+        headerData:
+          !yourBorrows?.debts || yourBorrows.debts.length === 0 ? (
+            null
+          ) : (
+            getInformers().map(({title, data}) => (
+              <Widget
+                src={`${config.ownerId}/widget/Lendle.Card.Informer`}
+                props={{config, title, data}}
+              />
+            ))
+          ),
         body: (
           <>
             {!debts || debts.length === 0 ? (

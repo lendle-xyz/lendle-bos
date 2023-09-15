@@ -636,20 +636,21 @@ function calculateUserTotalCollateralUSD(deposits) {
   ), 0)
 }
 
-function calculateUserAPYSupplies(deposits) {
-  console.log("deposits", deposits)
-  const totalAPY = deposits.reduce((acc, deposit) => (
-    isValid(deposit.underlyingBalanceUSD) 
-    ? acc + Number(deposit.underlyingBalanceUSD) * deposit.supplyAPY
+function calculateBorrowPowerUsed(debts) {
+  const totalDebts = calculateTotalIndicator(debts, "variableBorrowsUSD");
+  return isValid(totalDebts)
+    ? totalDebts / (totalDebts + Number(debts[0].availableBorrowsUSD))
+    : 0;
+}
+
+function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
+  const totalAPY = data.reduce((acc, item) => (
+    isValid(item[indicatorBase]) && isValid(item[indicatorRate])
+    ? acc + Number(item[indicatorBase]) * item[indicatorRate]
     : acc
   ), 0)
-  console.log("debts", debts)
-  const totalDebts = deposits.reduce((acc, debt) => (
-    isValid(debt.underlyingBalanceUSD)
-    ? acc + Number(debt.underlyingBalanceUSD)
-    : acc
-    ), 0)
-  return totalAPY / totalDebts;
+  const totalBase = calculateTotalIndicator(data, indicatorBase);
+  return totalAPY / totalBase;
 };
 
 function getHealthFactor() { 
@@ -813,7 +814,7 @@ function updateUserSupplies(marketsMapping, refresh) {
         userTotalAvailableLiquidityUSD: calculateTotalIndicator(deposits, "userAvailableLiquidityUSD"),
         userTotalDepositUSD: calculateTotalIndicator(deposits, "underlyingBalanceUSD"),
         userTotalCollateralUSD: calculateUserTotalCollateralUSD(deposits),
-        userAPYSupplies: calculateUserAPYSupplies(deposits),
+        userAPYSupplies: calculateUserTotalAPY(deposits, "underlyingBalanceUSD", "supplyAPY"),
       },
     });
 
@@ -902,6 +903,8 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
     const assetsToBorrow = {
       ...userDebts,
       userTotalDebtUSD: calculateTotalIndicator(debts, "variableBorrowsUSD"),
+      borrowPowerUsed: calculateBorrowPowerUsed(debts),
+      userAPYBorrows: calculateUserTotalAPY(debts, "variableBorrowsUSD", "variableBorrowAPY"),
       debts: debts,
     };
     const yourBorrows = {
