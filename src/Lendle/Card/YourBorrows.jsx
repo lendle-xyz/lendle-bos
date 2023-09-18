@@ -19,7 +19,6 @@ const {
 State.init({
   data: undefined,
 });
-console.log("yourBorrows.userAPYBorrows", yourBorrows.userAPYBorrows)
 function getInformers() {
   return [
     {
