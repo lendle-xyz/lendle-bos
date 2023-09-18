@@ -1,21 +1,32 @@
-const { netWorth, netApy, healthFactor, showHealthFactor } = props;
+const {
+  netWorth,
+  netApy,
+  healthFactor,
+  showHealthFactor,
+  totalValueLockedUSD,
+  totalLoanOriginations,
+  currentLoans,
+  // lendTotalSupply,
+  lendCirculatingSupply,
+  globalHealthFactor
+} = props;
 
 if (!netWorth || !netApy || !healthFactor) {
   return <div />;
 }
 
 const HeroDataContainer = styled.div`
-  margin-top: 40px;
+  margin-top: 10px;
   width: 100%;
-  gap: 20px;
+  gap: 5px;
   display: flex;
   flex-direction: column;
 
   @media (min-width: 640px) {
     width: auto;
     display: grid;
-    grid-template-columns: 1fr 1fr ${showHealthFactor ? "1fr" : ""};
-    gap: 90px;
+    grid-template-columns: 1fr 1fr 1fr 1fr ${showHealthFactor ? "1fr" : ""};
+    gap: 60px;
     text-align: center;
   }
 `;
@@ -51,17 +62,29 @@ const KVData = styled.div`
 
 const heroData = [
   {
-    name: "Net Worth",
-    value: netWorth,
+    name: "Total Value Locked",
+    value: "$ " + totalValueLockedUSD,
   },
   {
-    name: "Net APY",
-    value: netApy,
+    name: "Total Loan Originals",
+    value: "$ " + totalLoanOriginations,
+  },
+  {
+    name: "Current Loan Outstanding",
+    value: "$ " + currentLoans,
+  },
+  // {
+  //   name: "LEND Market Cap",
+  //   value: lendTotalSupply  + " LEND",
+  // },
+  {
+    name: "LEND Circulating Supply",
+    value: lendCirculatingSupply  + " LEND",
   },
   showHealthFactor
     ? {
-        name: "Health Factor",
-        value: healthFactor,
+        name: "Global Health factor",
+        value: globalHealthFactor + " %",
       }
     : undefined,
 ].filter((element) => !!element);

@@ -333,9 +333,59 @@ function getMarkets(chainId) {
       maximumLTV: market.maximumLTV,
       liquidationThreshold: market.liquidationThreshold,
       liquidationPenalty: market.liquidationPenalty,
+      totalValueLockedUSD: market.totalValueLockedUSD,
     }));
     return {
       body: mappedMarkets,
+    };
+  });
+}
+
+function getMarketsData(chainId) {
+  const query = `
+  query MarketsDataQuery {
+    financialsDailySnapshots(orderBy: timestamp, orderDirection: desc, first: 100) {
+      cumulativeBorrowUSD
+      cumulativeTotalRevenueUSD
+      dailyTotalRevenueUSD
+      timestamp
+      totalDepositBalanceUSD
+      totalBorrowBalanceUSD
+      totalValueLockedUSD
+    }
+    feesDailySnapshots(first: 100, orderBy: timestamp, orderDirection: desc) {
+      totalPenaltyPaid
+      totalReceived
+      totalStaked
+      totalSupply
+      totalLocked
+    }
+    stakers(first: $first) {
+      totalLocked
+      totalStaked
+    }
+  }
+  `;
+
+  return asyncFetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  }).then((res) => {
+    const financialsDailySnapshots = res.body.data.financialsDailySnapshots;
+    const feesDailySnapshots = res.body.data.feesDailySnapshots;
+    const stakers = res.body.data.stakers;
+    // const lendTotalLocked = stakers.reduce(({ totalLocked }) => !amount || Number(amount) === 0 
+    //   ? acc
+    //   : acc + Number(totalLocked.slice(0, -18))
+    // , 0)
+    return {
+      body: {
+        totalValueLockedUSD: financialsDailySnapshots[0].totalValueLockedUSD,
+        cumulativeBorrowUSD: financialsDailySnapshots[0].cumulativeBorrowUSD,
+        lendTotalSupply: feesDailySnapshots[0].totalSupply.slice(0, -18),
+        lendTotalLocked: feesDailySnapshots[0].totalLocked.slice(0, -18),
+      },
     };
   });
 }
@@ -577,6 +627,7 @@ State.init({
   baseAssetBalance: undefined,
   selectTab: "supply", // supply | borrow
   markets: undefined,
+  marketsData: undefined,
 });
 
 const loading =
@@ -708,6 +759,27 @@ function updateData(refresh) {
         ...config.nativeCurrency,
         supportPermit: true,
       },
+    });
+    getMarketsData(state.chainId || DEFAULT_CHAIN_ID).then((marketsDataResponse) => {
+      if (!marketsDataResponse) {
+        return;
+      }
+      const marketsData = marketsDataResponse.body;
+      const lendCirculatingSupply = Number(marketsData.lendTotalSupply) - marketsData.lendTotalLocked
+      const totalValueLocked = calculateTotalIndicator(markets, "totalValueLockedUSD")
+      const totalDepositBalanceUSD = calculateTotalIndicator(markets, "totalDepositBalanceUSD")
+      const totalBorrowBalanceUSD = calculateTotalIndicator(markets, "totalBorrowBalanceUSD")
+      const globalHealthFactor = isValid(totalBorrowBalanceUSD) && isValid(totalValueLocked) ? totalValueLocked / totalBorrowBalanceUSD : 0
+      // const totalLoanOriginations = calculateTotalIndicator(markets, "totalDepositBalanceUSD")
+      State.update({
+        marketsData: {
+          ...marketsData,
+          totalBorrowBalanceUSD,
+          lendCirculatingSupply,
+          globalHealthFactor,
+          totalDepositBalanceUSD
+        }
+      })
     });
 
     // check abi loaded
@@ -1034,6 +1106,12 @@ const body = loading ? (
                 : "-"
             }%`,
             healthFactor: state.yourBorrows.healthFactor,
+            totalValueLockedUSD: Number(state.marketsData.totalValueLockedUSD).toFixed(0),
+            totalLoanOriginations: Number(state.marketsData.cumulativeBorrowUSD).toFixed(0),
+            currentLoans: Number(state.marketsData.totalBorrowBalanceUSD).toFixed(0),
+            // lendTotalSupply: Number(state.marketsData.lendTotalSupply).toFixed(0),
+            lendCirculatingSupply: Number(state.marketsData.lendCirculatingSupply).toFixed(0),
+            globalHealthFactor: state.marketsData.globalHealthFactor.toFixed(2),
             showHealthFactor:
               state.yourBorrows &&
               state.yourBorrows.debts &&
