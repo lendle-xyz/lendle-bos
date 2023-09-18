@@ -27,7 +27,7 @@ function getInformers() {
     {
       title: "APY",
       data: yourSupplies?.userAPYSupplies
-        ? `${(yourSupplies.userAPYSupplies).toFixed(4) * 100} %`
+        ? `${(yourSupplies.userAPYSupplies * 100).toFixed(2)} %`
         : "-",
     },
     {

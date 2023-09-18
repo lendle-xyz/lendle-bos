@@ -19,7 +19,7 @@ const {
 State.init({
   data: undefined,
 });
-
+console.log("yourBorrows.userAPYBorrows", yourBorrows.userAPYBorrows)
 function getInformers() {
   return [
     {
@@ -31,13 +31,13 @@ function getInformers() {
     {
       title: "APY",
       data: yourBorrows?.userAPYBorrows
-        ? `${(yourBorrows.userAPYBorrows).toFixed(4) * 100} %`
+        ? `${(yourBorrows.userAPYBorrows * 100).toFixed(2)} %`
         : "-",
     },
     {
       title: "Borrow Power Used",
       data: yourBorrows?.borrowPowerUsed
-        ? `${(yourBorrows.borrowPowerUsed).toFixed(4) * 100} %`
+        ? `${(yourBorrows.borrowPowerUsed * 100).toFixed(2)} %`
         : "-",
     },
     {
