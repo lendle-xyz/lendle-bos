@@ -6,9 +6,10 @@ const {
   totalValueLockedUSD,
   totalLoanOriginations,
   currentLoans,
-  // lendTotalSupply,
+  lendTotalSupply,
   lendCirculatingSupply,
-  globalHealthFactor
+  globalHealthFactor,
+  lendlePrice
 } = props;
 
 if (!netWorth || !netApy || !healthFactor) {
@@ -25,8 +26,8 @@ const HeroDataContainer = styled.div`
   @media (min-width: 640px) {
     width: auto;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr ${showHealthFactor ? "1fr" : ""};
-    gap: 60px;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr ${showHealthFactor ? "1fr" : ""};
+    gap: 5px;
     text-align: center;
   }
 `;
@@ -45,13 +46,19 @@ const KVData = styled.div`
     font-size: 14px;
     font-weight: 500;
     @media (min-width: 640px) {
-      font-size: 14px;
+      font-size: 12px;
+    }
+    @media (min-width: 1024px) {
+      font-size: 16px;
     }
   }
   .value {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 700;
     @media (min-width: 640px) {
+      font-size: 16px;
+    }
+    @media (min-width: 1024px) {
       font-size: 22px;
     }
   }
@@ -60,26 +67,40 @@ const KVData = styled.div`
   }
 `;
 
+const numberFormat = (numberString) => {
+  const number = Number(numberString)
+  if (number > 1000000) {
+    return (number / 1000000).toFixed(2) + "M"
+  }
+  if (number > 1000) {
+    return (number / 1000).toFixed(2) + "K"
+  }
+}
+
 const heroData = [
   {
     name: "Total Value Locked",
-    value: "$ " + totalValueLockedUSD,
+    value: "$ " + numberFormat(totalValueLockedUSD),
   },
   {
     name: "Total Loan Originals",
-    value: "$ " + totalLoanOriginations,
+    value: "$ " + numberFormat(totalLoanOriginations),
   },
   {
     name: "Current Loan Outstanding",
-    value: "$ " + currentLoans,
+    value: "$ " + numberFormat(currentLoans),
   },
-  // {
-  //   name: "LEND Market Cap",
-  //   value: lendTotalSupply  + " LEND",
-  // },
+  {
+    name: "LEND Price",
+    value: "$ " + Number(lendlePrice).toFixed(4),
+  },
+  {
+    name: "LEND Market Cap",
+    value: "$ " + numberFormat(lendTotalSupply * Number(lendlePrice)),
+  },
   {
     name: "LEND Circulating Supply",
-    value: lendCirculatingSupply  + " LEND",
+    value: numberFormat(lendCirculatingSupply),
   },
   showHealthFactor
     ? {
