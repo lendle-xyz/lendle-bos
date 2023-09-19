@@ -15,7 +15,7 @@ const DEFAULT_CHAIN_ID = 5000;
 const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
 const ETH_TOKEN = { name: "Mantle", symbol: "MNT", decimals: 18 };
 const WETH_TOKEN = { name: "Wrapped Mantle", symbol: "WMNT", decimals: 18 };
-const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
+const ACTUAL_BORROW_AMOUNT_RATE = 1;
 const HIDE_TOKENS_SYMBOL = ["MNT"];
 
 const GRAPHQL_URL =
@@ -720,7 +720,7 @@ function calculateAvailableBorrows({
     : Number(0).toFixed();
 }
 
-function calculateTotalIndicator(data, indicator ) {
+function calculateTotalIndicator(data, indicator) {
   return data.reduce(
     (acc, item) =>
       isValid(item[indicator]) && item.symbol !== "WMNT"
@@ -730,12 +730,10 @@ function calculateTotalIndicator(data, indicator ) {
   );
 }
 
-function calculateTotalIndicatorNoException(data, indicator ) {
+function calculateTotalIndicatorNoException(data, indicator) {
   return data.reduce(
     (acc, item) =>
-      isValid(item[indicator])
-        ? acc + Number(item[indicator])
-        : acc,
+      isValid(item[indicator]) ? acc + Number(item[indicator]) : acc,
     0
   );
 }
@@ -752,7 +750,10 @@ function calculateUserTotalCollateralUSD(deposits) {
 }
 
 function calculateBorrowPowerUsed(debts) {
-  const totalDebts = calculateTotalIndicatorNoException(debts, "variableBorrowsUSD");
+  const totalDebts = calculateTotalIndicatorNoException(
+    debts,
+    "variableBorrowsUSD"
+  );
   return isValid(totalDebts)
     ? totalDebts / (totalDebts + Number(debts[0].availableBorrowsUSD))
     : 0;
@@ -761,8 +762,7 @@ function calculateBorrowPowerUsed(debts) {
 function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
   const totalAPY = data.reduce(
     (acc, item) =>
-      isValid(item[indicatorBase]) &&
-      isValid(item[indicatorRate])
+      isValid(item[indicatorBase]) && isValid(item[indicatorRate])
         ? acc + Number(item[indicatorBase]) * item[indicatorRate]
         : acc,
     0
@@ -828,16 +828,16 @@ function updateData(refresh) {
       return prev;
     }, {});
 
-    const nativeMarket = markets.find(
-      (market) => market.symbol === config.nativeWrapCurrency.symbol
-    );
-    markets.push({
-      ...nativeMarket,
-      ...{
-        ...config.nativeCurrency,
-        supportPermit: true,
-      },
-    });
+    // const nativeMarket = markets.find(
+    //   (market) => market.symbol === config.nativeWrapCurrency.symbol
+    // );
+    // markets.push({
+    //   ...nativeMarket,
+    //   ...{
+    //     ...config.nativeCurrency,
+    //     supportPermit: true,
+    //   },
+    // });
     getMarketsData(state.chainId || DEFAULT_CHAIN_ID).then(
       (marketsDataResponse) => {
         if (!marketsDataResponse) {
@@ -1084,7 +1084,10 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       });
     const assetsToBorrow = {
       ...userDebts,
-      userTotalDebtUSD: calculateTotalIndicatorNoException(debts, "variableBorrowsUSD"),
+      userTotalDebtUSD: calculateTotalIndicatorNoException(
+        debts,
+        "variableBorrowsUSD"
+      ),
       borrowPowerUsed: calculateBorrowPowerUsed(debts),
       userAPYBorrows: calculateUserTotalAPY(
         debts,
