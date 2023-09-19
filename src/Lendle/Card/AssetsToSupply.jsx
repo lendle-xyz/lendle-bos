@@ -80,7 +80,7 @@ return (
                           />,
                           <div>
                             <div className="token-title">{row.symbol}</div>
-                            <div className="token-chain">{row.name}</div>
+                            <div className="token-chain">$ {Number(row.marketReferencePriceInUsd).toFixed(2)}</div>
                           </div>,
                         ],
                       }}
@@ -133,7 +133,7 @@ return (
                                         {row.symbol}
                                       </div>
                                       <div className="token-chain">
-                                        {row.name}
+                                        $ {Number(row.marketReferencePriceInUsd).toFixed(2)}
                                       </div>
                                     </div>,
                                   ],
