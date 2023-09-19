@@ -170,7 +170,7 @@ function borrowAllowance(vwETHAddress, userAddress) {
 
   return vToken.borrowAllowance(
     userAddress,
-    config.wrappedTokenGatewayV3Address
+    config.wrappedTokenGatewayAddress
   );
 }
 
@@ -184,7 +184,7 @@ function approveDelegation(vwETHAddress) {
     "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
   );
   return vToken.approveDelegation(
-    config.wrappedTokenGatewayV3Address,
+    config.wrappedTokenGatewayAddress,
     maxUint256
   );
 }
@@ -230,8 +230,8 @@ const changeValue = (value) => {
 function borrowERC20(amount) {
   State.update({ loading: true });
   const pool = new ethers.Contract(
-    config.aavePoolV3Address,
-    config.aavePoolV3ABI.body,
+    config.lendingPoolAddress,
+    config.lendingPoolABI.body,
     Ethers.provider().getSigner()
   );
 
@@ -278,14 +278,14 @@ function borrowERC20(amount) {
 
 function borrowETH(amount) {
   const wrappedTokenGateway = new ethers.Contract(
-    config.wrappedTokenGatewayV3Address,
-    config.wrappedTokenGatewayV3ABI.body,
+    config.wrappedTokenGatewayAddress,
+    config.wrappedTokenGatewayABI.body,
     Ethers.provider().getSigner()
   );
   State.update({ loading: true });
   return wrappedTokenGateway
     .borrowETH(
-      config.aavePoolV3Address,
+      config.lendingPoolAddress,
       amount,
       2, // variable interest rate
       0

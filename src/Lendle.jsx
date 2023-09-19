@@ -1,10 +1,10 @@
 const ROUND_DOWN = 0;
 const CONTRACT_ABI = {
-  wrappedTokenGatewayV3ABI:
+  wrappedTokenGatewayABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WETHGateway.json",
   erc20Abi:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/ERC20.json",
-  aavePoolV3ABI:
+  lendingPoolABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/LendingPool.json",
   variableDebtTokenABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/VariableDebtToken.json",
@@ -27,9 +27,9 @@ const DEFAULT_LENDLE_PRICE = 0.052
 // Get AAVE network config by chain id
 function getNetworkConfig(chainId) {
   const abis = {
-    wrappedTokenGatewayV3ABI: fetch(CONTRACT_ABI.wrappedTokenGatewayV3ABI),
+    wrappedTokenGatewayABI: fetch(CONTRACT_ABI.wrappedTokenGatewayABI),
     erc20Abi: fetch(CONTRACT_ABI.erc20Abi),
-    aavePoolV3ABI: fetch(CONTRACT_ABI.aavePoolV3ABI),
+    lendingPoolABI: fetch(CONTRACT_ABI.lendingPoolABI),
     variableDebtTokenABI: fetch(CONTRACT_ABI.variableDebtTokenABI),
     walletBalanceProviderABI: fetch(CONTRACT_ABI.walletBalanceProviderABI),
   };
@@ -48,8 +48,8 @@ function getNetworkConfig(chainId) {
         nativeCurrency: ETH_TOKEN,
         nativeWrapCurrency: WETH_TOKEN,
         rpcUrl: "https://rpc.mantle.xyz",
-        aavePoolV3Address: "0xCFa5aE7c2CE8Fadc6426C1ff872cA45378Fb7cF3",
-        wrappedTokenGatewayV3Address:
+        lendingPoolAddress: "0xCFa5aE7c2CE8Fadc6426C1ff872cA45378Fb7cF3",
+        wrappedTokenGatewayAddress:
           "0xEc831f8710C6286a91a348928600157f07aC55c2",
         balanceProviderAddress: "0x370bc6B2940A6927fFf2D64BA3D96C641579a01e",
         ...abis,
@@ -108,6 +108,10 @@ function isValid(a) {
   if (isNaN(Number(a))) return false;
   if (a === "") return false;
   return true;
+}
+
+function hexToDecimalAmount(amount, decimals) {
+  return !amount || Number(amount) === 0 ? 0 : parseFloat(ethers.utils.formatUnits(amount, decimals))
 }
 
 const GAS_LIMIT_RECOMMENDATIONS = {
@@ -404,9 +408,8 @@ function getMarketsData(chainId) {
 // }
 // returns TokenBalance[]
 function getUserBalances(chainId, account, tokens) {
-  const url = `${
-    config.AAVE_API_BASE_URL
-  }/${chainId}/balances?account=${account}&tokens=${tokens.join("|")}`;
+  const url = `${config.AAVE_API_BASE_URL
+    }/${chainId}/balances?account=${account}&tokens=${tokens.join("|")}`;
   return asyncFetch(url);
 }
 
@@ -567,21 +570,24 @@ function getUserDebts(chainId, address) {
         };
       });
 
-    const healthFactor = "∞";
-    const netWorthUSD = "0";
-    const availableBorrowsUSD = "2";
-    const userTotalDebtUSD = 0;
-    const debts = mappedPositions;
 
-    return {
-      body: {
-        healthFactor,
-        netWorthUSD,
-        availableBorrowsUSD,
-        userTotalDebtUSD,
-        debts,
-      },
-    };
+    return getAccountReserveData(address).then((data) => {
+      const userAccountData = {
+        healthFactor: hexToDecimalAmount(data?.[5]?._hex, 18),
+        netWorthUSD: hexToDecimalAmount(data?.[0]?._hex, 18),
+        availableBorrowsUSD: hexToDecimalAmount(data?.[2]?._hex, 18),
+        userTotalDebtUSD: hexToDecimalAmount(data?.[1]?._hex, 18),
+        debts: mappedPositions,
+      }
+
+      State.update({
+        userAccountData: userAccountData
+      });
+
+      return {
+        body: { ...userAccountData },
+      };
+    });
   });
 }
 
@@ -592,7 +598,7 @@ function getConfig(network) {
     case "mainnet":
       return {
         ownerId:
-          "lendle.near",
+          "plakhuta.near",
         nodeUrl: "https://rpc.mainnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
         ipfsPrefixLendle: "https://ipfs.io/ipfs",
@@ -664,6 +670,7 @@ State.init({
   markets: undefined,
   marketsData: undefined,
   lendlePrice: undefined,
+  userAccountData: {}
 });
 
 const loading =
@@ -740,8 +747,8 @@ function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
   return totalAPY / totalBase;
 };
 
-function getHealthFactor() { 
-  const healthFactor = (state.yourSupplies.userTotalAvailableLiquidityUSD / state.yourBorrows.userTotalDebtUSD).toFixed(2);
+function getHealthFactor() {
+  const healthFactor = (state.userAccountData?.healthFactor).toFixed(2);
   return formatHealthFactor(healthFactor);
 };
 
@@ -770,6 +777,25 @@ function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
 
   return balanceProvider.batchBalanceOf([userAddress], tokenAddresses);
 }
+
+function getAccountReserveData(userAddress) {
+
+  const lpContract = new ethers.Contract(
+    config.lendingPoolAddress,
+    config.lendingPoolABI.body,
+    Ethers.provider().getSigner()
+  );
+
+  const userAccountData = lpContract.getUserAccountData(userAddress)
+
+
+  return userAccountData
+}
+
+
+
+
+
 
 // update data in async manner
 function updateData(refresh) {
@@ -917,9 +943,9 @@ function updateUserSupplies(marketsMapping, refresh) {
         //     }
         //   : {}),
         userAvailableLiquidityUSD: Number(userDeposit.underlyingBalance) * Number(market.liquidationThreshold) / 100,
-        };
-      });
-      
+      };
+    });
+
     State.update({
       yourSupplies: {
         deposits: deposits,
@@ -962,6 +988,7 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       return;
     }
     const userDebts = userDebtsResponse.body;
+    console.log("userDebts", userDebts)
     const debts = markets
       .map((market) => {
         const userDebt = userDebts.debts.find(
@@ -1091,9 +1118,8 @@ const body = loading ? (
       {state.walletConnected
         ? state.isChainSupported
           ? "Loading..."
-          : `Please switch network to ${
-              getNetworkConfig(DEFAULT_CHAIN_ID).chainName
-            }`
+          : `Please switch network to ${getNetworkConfig(DEFAULT_CHAIN_ID).chainName
+          }`
         : "Connect your wallet to see your supplies, borrowings, and open positions."}
       <Widget
         src={`${config.ownerId}/widget/Lendle.Card.Markets`}
@@ -1131,20 +1157,18 @@ const body = loading ? (
           src={`${config.ownerId}/widget/Lendle.HeroData`}
           props={{
             config,
-            netWorth: `$ ${
-              state.assetsToBorrow?.netWorthUSD
-                ? Big(state.assetsToBorrow.netWorthUSD).toFixed(2)
-                : "-"
-            }`,
-            netApy: `${
-              state.assetsToBorrow?.netAPY
-                ? Number(
-                    Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
-                  ) === 0
-                  ? "0.00"
-                  : Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
-                : "-"
-            }%`,
+            netWorth: `$ ${state.assetsToBorrow?.netWorthUSD
+              ? Big(state.assetsToBorrow.netWorthUSD).toFixed(2)
+              : "-"
+              }`,
+            netApy: `${state.assetsToBorrow?.netAPY
+              ? Number(
+                Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
+              ) === 0
+                ? "0.00"
+                : Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
+              : "-"
+              }%`,
             healthFactor: state.yourBorrows.healthFactor,
             totalValueLockedUSD: Number(state.marketsData.totalValueLockedUSD).toFixed(0),
             totalLoanOriginations: Number(state.marketsData.cumulativeBorrowUSD).toFixed(0),
@@ -1261,7 +1285,7 @@ const body = loading ? (
             onRequestClose: () => State.update({ alertModalText: false }),
           }}
         />
-        )}
+      )}
       <Widget
         src={`${config.ownerId}/widget/Lendle.Card.Markets`}
         props={{
