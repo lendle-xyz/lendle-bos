@@ -1,10 +1,10 @@
 const ROUND_DOWN = 0;
 const CONTRACT_ABI = {
-  wrappedTokenGatewayV3ABI:
+  wrappedTokenGatewayABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/WETHGateway.json",
   erc20Abi:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/ERC20.json",
-  aavePoolV3ABI:
+  lendingPoolABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/LendingPool.json",
   variableDebtTokenABI:
     "https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/abi/VariableDebtToken.json",
@@ -24,9 +24,9 @@ const GRAPHQL_URL =
 // Get AAVE network config by chain id
 function getNetworkConfig(chainId) {
   const abis = {
-    wrappedTokenGatewayV3ABI: fetch(CONTRACT_ABI.wrappedTokenGatewayV3ABI),
+    wrappedTokenGatewayABI: fetch(CONTRACT_ABI.wrappedTokenGatewayABI),
     erc20Abi: fetch(CONTRACT_ABI.erc20Abi),
-    aavePoolV3ABI: fetch(CONTRACT_ABI.aavePoolV3ABI),
+    lendingPoolABI: fetch(CONTRACT_ABI.lendingPoolABI),
     variableDebtTokenABI: fetch(CONTRACT_ABI.variableDebtTokenABI),
     walletBalanceProviderABI: fetch(CONTRACT_ABI.walletBalanceProviderABI),
   };
@@ -45,8 +45,8 @@ function getNetworkConfig(chainId) {
         nativeCurrency: ETH_TOKEN,
         nativeWrapCurrency: WETH_TOKEN,
         rpcUrl: "https://rpc.mantle.xyz",
-        aavePoolV3Address: "0xCFa5aE7c2CE8Fadc6426C1ff872cA45378Fb7cF3",
-        wrappedTokenGatewayV3Address:
+        lendingPoolAddress: "0xCFa5aE7c2CE8Fadc6426C1ff872cA45378Fb7cF3",
+        wrappedTokenGatewayAddress:
           "0xEc831f8710C6286a91a348928600157f07aC55c2",
         balanceProviderAddress: "0x370bc6B2940A6927fFf2D64BA3D96C641579a01e",
         ...abis,
@@ -564,10 +564,22 @@ function getUserDebts(chainId, address) {
         };
       });
 
-    const healthFactor = "∞";
-    const netWorthUSD = "0";
-    const availableBorrowsUSD = "2";
-    const userTotalDebtUSD = 0;
+
+    const accountData =  getAccountReserveData(address)
+
+    accountData.account;
+    accountData.totalCollateralETH;
+    accountData.totalDebtETH;
+    accountData.availableBorrowsETH;
+    accountData.currentLiquidationThreshold;
+    accountData.ltv;
+    accountData.healthFactor;
+
+
+    const healthFactor = accountData.healthFactor;
+    const netWorthUSD = accountData.totalCollateralETH;
+    const availableBorrowsUSD = accountData.totalCollateralETH;
+    const userTotalDebtUSD = accountData.totalDebtETH;
     const debts = mappedPositions;
 
     return {
@@ -589,7 +601,7 @@ function getConfig(network) {
     case "mainnet":
       return {
         ownerId:
-          "lendle.near",
+          "plakhuta.near",
         nodeUrl: "https://rpc.mainnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
         ipfsPrefixLendle: "https://ipfs.io/ipfs",
@@ -734,6 +746,40 @@ function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
 
   return balanceProvider.batchBalanceOf([userAddress], tokenAddresses);
 }
+
+function getAccountReserveData(userAddress) {
+
+  const lpContract = new ethers.Contract(
+    config.lendingPoolAddress,
+    config.lendingPoolABI.body,
+    Ethers.provider().getSigner()
+  );
+  
+
+  let userData = {}
+  const userAccountData = lpContract.getUserAccountData(userAddress)
+  .then((userAccountData) => {
+    console.log("!!!!!userAccountData", userAccountData)
+      
+    userData = {
+        userDataaccount: account.toLowerCase(),
+        totalCollateralETH: userAccountData.totalCollateralETH.toHexString(),
+        totalDebtETH: userAccountData.totalDebtETH.toHexString(),
+        availableBorrowsETH: userAccountData.availableBorrowsETH.toHexString(),
+        currentLiquidationThreshold: (userAccountData.currentLiquidationThreshold / 100).toFixed(2),
+        ltv: (userAccountData.ltv / 100).toFixed(2),
+        healthFactor: userAccountData.healthFactor.toHexString()
+      }
+  });
+ console.log("@@@serAccountData", userData)
+ return userData
+
+}
+
+
+
+
+
 
 // update data in async manner
 function updateData(refresh) {
@@ -922,6 +968,7 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       return;
     }
     const userDebts = userDebtsResponse.body;
+    console.log("userDebts", userDebts)
     const debts = markets
       .map((market) => {
         const userDebt = userDebts.debts.find(

@@ -188,7 +188,7 @@ function signERC20Approval(user, reserve, tokenName, amount, deadline) {
       },
       message: {
         owner: user,
-        spender: config.aavePoolV3Address,
+        spender: config.lendingPoolAddress,
         value: amount,
         nonce,
         deadline,
@@ -213,8 +213,8 @@ function signERC20Approval(user, reserve, tokenName, amount, deadline) {
 function supplyWithPermit(user, reserve, amount, deadline, rawSig) {
   const sig = ethers.utils.splitSignature(rawSig);
   const pool = new ethers.Contract(
-    config.aavePoolV3Address,
-    config.aavePoolV3ABI.body,
+    config.lendingPoolAddress,
+    config.lendingPoolABI.body,
     Ethers.provider().getSigner()
   );
   return pool[
@@ -231,12 +231,12 @@ function depositETH(amount) {
     .getAddress()
     .then((address) => {
       const wrappedTokenGateway = new ethers.Contract(
-        config.wrappedTokenGatewayV3Address,
-        config.wrappedTokenGatewayV3ABI.body,
+        config.wrappedTokenGatewayAddress,
+        config.wrappedTokenGatewayABI.body,
         Ethers.provider().getSigner()
       );
       return wrappedTokenGateway.depositETH(
-        config.aavePoolV3Address,
+        config.lendingPoolAddress,
         address,
         0,
         {
@@ -285,7 +285,7 @@ function getAllowance() {
         Ethers.provider().getSigner()
       );
       token
-        .allowance(userAddress, config.aavePoolV3Address)
+        .allowance(userAddress, config.lendingPoolAddress)
         .then((allowanceAmount) => allowanceAmount.toString())
         .then((allowanceAmount) => {
           State.update({
@@ -302,8 +302,8 @@ getAllowance();
 function depositFromApproval(amount) {
   const tokenAddress = underlyingAsset;
   const pool = new ethers.Contract(
-    config.aavePoolV3Address,
-    config.aavePoolV3ABI.body,
+    config.lendingPoolAddress,
+    config.lendingPoolABI.body,
     Ethers.provider().getSigner()
   );
 
@@ -327,7 +327,7 @@ function approve(amount) {
     config.erc20Abi.body,
     Ethers.provider().getSigner()
   );
-  return token["approve(address,uint256)"](config.aavePoolV3Address, amount);
+  return token["approve(address,uint256)"](config.lendingPoolAddress, amount);
 }
 
 function update() {

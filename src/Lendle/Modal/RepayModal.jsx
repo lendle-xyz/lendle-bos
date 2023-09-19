@@ -246,7 +246,7 @@ function getAllowance() {
         Ethers.provider().getSigner()
       );
       token
-        .allowance(userAddress, config.aavePoolV3Address)
+        .allowance(userAddress, config.lendingPoolAddress)
         .then((allowanceAmount) => allowanceAmount.toString())
         .then((allowanceAmount) => {
           State.update({
@@ -262,8 +262,8 @@ getAllowance();
 function repayFromApproval(amount) {
   const tokenAddress = underlyingAsset;
   const pool = new ethers.Contract(
-    config.aavePoolV3Address,
-    config.aavePoolV3ABI.body,
+    config.lendingPoolAddress,
+    config.lendingPoolABI.body,
     Ethers.provider().getSigner()
   );
 
@@ -287,7 +287,7 @@ function approve(amount) {
     config.erc20Abi.body,
     Ethers.provider().getSigner()
   );
-  return token["approve(address,uint256)"](config.aavePoolV3Address, amount);
+  return token["approve(address,uint256)"](config.lendingPoolAddress, amount);
 }
 
 function update() {
@@ -343,7 +343,7 @@ function signERC20Approval(user, reserve, tokenName, amount, deadline) {
       },
       message: {
         owner: user,
-        spender: config.aavePoolV3Address,
+        spender: config.lendingPoolAddress,
         value: amount,
         nonce,
         deadline,
@@ -413,8 +413,8 @@ function repayERC20(shownAmount, actualAmount) {
           .then((rawSig) => {
             const sig = ethers.utils.splitSignature(rawSig);
             const pool = new ethers.Contract(
-              config.aavePoolV3Address,
-              config.aavePoolV3ABI.body,
+              config.lendingPoolAddress,
+              config.lendingPoolABI.body,
               Ethers.provider().getSigner()
             );
 
@@ -465,8 +465,8 @@ function repayERC20(shownAmount, actualAmount) {
 function repayETH(shownAmount, actualAmount) {
   State.update({ loading: true });
   const wrappedTokenGateway = new ethers.Contract(
-    config.wrappedTokenGatewayV3Address,
-    config.wrappedTokenGatewayV3ABI.body,
+    config.wrappedTokenGatewayAddress,
+    config.wrappedTokenGatewayABI.body,
     Ethers.provider().getSigner()
   );
 
@@ -476,7 +476,7 @@ function repayETH(shownAmount, actualAmount) {
     .then((address) => {
       wrappedTokenGateway
         .repayETH(
-          config.aavePoolV3Address,
+          config.lendingPoolAddress,
           actualAmount,
           2, // variable interest rate
           address,

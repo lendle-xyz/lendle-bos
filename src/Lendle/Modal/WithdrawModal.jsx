@@ -153,8 +153,8 @@ function withdrawErc20(asset, actualAmount, shownAmount) {
     .getAddress()
     .then((address) => {
       const pool = new ethers.Contract(
-        config.aavePoolV3Address,
-        config.aavePoolV3ABI.body,
+        config.lendingPoolAddress,
+        config.lendingPoolABI.body,
         Ethers.provider().getSigner()
       );
 
@@ -200,13 +200,13 @@ function withdrawETH(actualAmount, shownAmount) {
     .getAddress()
     .then((address) => {
       const wrappedTokenGateway = new ethers.Contract(
-        config.wrappedTokenGatewayV3Address,
-        config.wrappedTokenGatewayV3ABI.body,
+        config.wrappedTokenGatewayAddress,
+        config.wrappedTokenGatewayABI.body,
         Ethers.provider().getSigner()
       );
 
       return wrappedTokenGateway.withdrawETH(
-        config.aavePoolV3Address,
+        config.lendingPoolAddress,
         actualAmount,
         address
       );
@@ -245,7 +245,7 @@ function approveForGateway(tokenAddress, amount) {
     Ethers.provider().getSigner()
   );
 
-  return token.approve(config.wrappedTokenGatewayV3Address, amount);
+  return token.approve(config.wrappedTokenGatewayAddress, amount);
 }
 
 function allowanceForGateway(tokenAddress) {
@@ -258,7 +258,7 @@ function allowanceForGateway(tokenAddress) {
         config.erc20Abi.body,
         Ethers.provider().getSigner()
       );
-      return token.allowance(address, config.wrappedTokenGatewayV3Address);
+      return token.allowance(address, config.wrappedTokenGatewayAddress);
     });
 }
 
