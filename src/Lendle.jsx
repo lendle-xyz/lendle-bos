@@ -835,16 +835,16 @@ function updateData(refresh) {
       return prev;
     }, {});
 
-    // const nativeMarket = markets.find(
-    //   (market) => market.symbol === config.nativeWrapCurrency.symbol
-    // );
-    // markets.push({
-    //   ...nativeMarket,
-    //   ...{
-    //     ...config.nativeCurrency,
-    //     supportPermit: true,
-    //   },
-    // });
+    const nativeMarket = markets.find(
+      (market) => market.symbol === config.nativeWrapCurrency.symbol
+    );
+    markets.push({
+      ...nativeMarket,
+      ...{
+        ...config.nativeCurrency,
+        supportPermit: true,
+      },
+    });
     getMarketsData(state.chainId || DEFAULT_CHAIN_ID).then(
       (marketsDataResponse) => {
         if (!marketsDataResponse) {
