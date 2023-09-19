@@ -720,10 +720,20 @@ function calculateAvailableBorrows({
     : Number(0).toFixed();
 }
 
-function calculateTotalIndicator(data, indicator) {
+function calculateTotalIndicator(data, indicator ) {
   return data.reduce(
     (acc, item) =>
       isValid(item[indicator]) && item.symbol !== "WMNT"
+        ? acc + Number(item[indicator])
+        : acc,
+    0
+  );
+}
+
+function calculateTotalIndicatorNoException(data, indicator ) {
+  return data.reduce(
+    (acc, item) =>
+      isValid(item[indicator])
         ? acc + Number(item[indicator])
         : acc,
     0
@@ -734,8 +744,7 @@ function calculateUserTotalCollateralUSD(deposits) {
   return deposits.reduce(
     (acc, deposit) =>
       isValid(deposit.underlyingBalanceUSD) &&
-      deposit.usageAsCollateralEnabledOnUser &&
-      item.symbol !== "WMNT"
+      deposit.usageAsCollateralEnabledOnUser
         ? acc + Number(deposit.underlyingBalanceUSD)
         : acc,
     0
@@ -743,7 +752,7 @@ function calculateUserTotalCollateralUSD(deposits) {
 }
 
 function calculateBorrowPowerUsed(debts) {
-  const totalDebts = calculateTotalIndicator(debts, "variableBorrowsUSD");
+  const totalDebts = calculateTotalIndicatorNoException(debts, "variableBorrowsUSD");
   return isValid(totalDebts)
     ? totalDebts / (totalDebts + Number(debts[0].availableBorrowsUSD))
     : 0;
@@ -753,8 +762,7 @@ function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
   const totalAPY = data.reduce(
     (acc, item) =>
       isValid(item[indicatorBase]) &&
-      isValid(item[indicatorRate]) &&
-      item.symbol !== "WMNT"
+      isValid(item[indicatorRate])
         ? acc + Number(item[indicatorBase]) * item[indicatorRate]
         : acc,
     0
@@ -979,7 +987,7 @@ function updateUserSupplies(marketsMapping, refresh) {
           deposits,
           "userAvailableLiquidityUSD"
         ),
-        userTotalDepositUSD: calculateTotalIndicator(
+        userTotalDepositUSD: calculateTotalIndicatorNoException(
           deposits,
           "underlyingBalanceUSD"
         ),
@@ -1076,7 +1084,7 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       });
     const assetsToBorrow = {
       ...userDebts,
-      userTotalDebtUSD: calculateTotalIndicator(debts, "variableBorrowsUSD"),
+      userTotalDebtUSD: calculateTotalIndicatorNoException(debts, "variableBorrowsUSD"),
       borrowPowerUsed: calculateBorrowPowerUsed(debts),
       userAPYBorrows: calculateUserTotalAPY(
         debts,
