@@ -16,7 +16,7 @@ const NATIVE_SYMBOL_ADDRESS_MAP_KEY = "0x0";
 const ETH_TOKEN = { name: "Mantle", symbol: "MNT", decimals: 18 };
 const WETH_TOKEN = { name: "Wrapped Mantle", symbol: "WMNT", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 0.99;
-const HIDE_TOKENS_SYMBOL = ["MNT"]
+const HIDE_TOKENS_SYMBOL = ["MNT"];
 
 const GRAPHQL_URL =
   "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
@@ -108,7 +108,9 @@ function isValid(a) {
 }
 
 function hexToDecimalAmount(amount, decimals) {
-  return !amount || Number(amount) === 0 ? 0 : parseFloat(ethers.utils.formatUnits(amount, decimals))
+  return !amount || Number(amount) === 0
+    ? 0
+    : parseFloat(ethers.utils.formatUnits(amount, decimals));
 }
 
 const GAS_LIMIT_RECOMMENDATIONS = {
@@ -379,7 +381,7 @@ function getMarketsData(chainId) {
     const financialsDailySnapshots = res.body.data.financialsDailySnapshots;
     const feesDailySnapshots = res.body.data.feesDailySnapshots;
     const stakers = res.body.data.stakers;
-    // const lendTotalLocked = stakers.reduce(({ totalLocked }) => !amount || Number(amount) === 0 
+    // const lendTotalLocked = stakers.reduce(({ totalLocked }) => !amount || Number(amount) === 0
     //   ? acc
     //   : acc + Number(totalLocked.slice(0, -18))
     // , 0)
@@ -405,8 +407,9 @@ function getMarketsData(chainId) {
 // }
 // returns TokenBalance[]
 function getUserBalances(chainId, account, tokens) {
-  const url = `${config.AAVE_API_BASE_URL
-    }/${chainId}/balances?account=${account}&tokens=${tokens.join("|")}`;
+  const url = `${
+    config.AAVE_API_BASE_URL
+  }/${chainId}/balances?account=${account}&tokens=${tokens.join("|")}`;
   return asyncFetch(url);
 }
 
@@ -567,7 +570,6 @@ function getUserDebts(chainId, address) {
         };
       });
 
-
     return getAccountReserveData(address).then((data) => {
       const userAccountData = {
         healthFactor: hexToDecimalAmount(data?.[5]?._hex, 18),
@@ -575,10 +577,10 @@ function getUserDebts(chainId, address) {
         availableBorrowsUSD: hexToDecimalAmount(data?.[2]?._hex, 18),
         userTotalDebtUSD: hexToDecimalAmount(data?.[1]?._hex, 18),
         debts: mappedPositions,
-      }
+      };
 
       State.update({
-        userAccountData: userAccountData
+        userAccountData: userAccountData,
       });
 
       return {
@@ -594,8 +596,7 @@ function getConfig(network) {
   switch (network) {
     case "mainnet":
       return {
-        ownerId:
-          "plakhuta.near",
+        ownerId: "plakhuta.near",
         nodeUrl: "https://rpc.mainnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
         ipfsPrefixLendle: "https://ipfs.io/ipfs",
@@ -624,6 +625,7 @@ State.init({
   showSupplyModal: false,
   showRepayModal: false,
   showBorrowModal: false,
+  showAssetBorrowModal: false,
   walletConnected: false,
   assetsToSupply: undefined,
   yourSupplies: undefined,
@@ -634,11 +636,13 @@ State.init({
   selectTab: "supply", // supply | borrow
   markets: undefined,
   marketsData: undefined,
-  userAccountData: {}
+  userAccountData: {},
 });
 
 const loading =
-  !state.assetsToSupply || !state.yourSupplies?.deposits || !state.assetsToBorrow;
+  !state.assetsToSupply ||
+  !state.yourSupplies?.deposits ||
+  !state.assetsToBorrow;
 
 // Import functions to state.imports
 function importFunctions(imports) {
@@ -679,19 +683,22 @@ function calculateAvailableBorrows({
 }
 
 function calculateTotalIndicator(data, indicator) {
-  return data.reduce((acc, item) => (
-    isValid(item[indicator])
-      ? acc + Number(item[indicator])
-      : acc
-  ), 0)
+  return data.reduce(
+    (acc, item) =>
+      isValid(item[indicator]) ? acc + Number(item[indicator]) : acc,
+    0
+  );
 }
 
 function calculateUserTotalCollateralUSD(deposits) {
-  return deposits.reduce((acc, deposit) => (
-    isValid(deposit.underlyingBalanceUSD) && deposit.usageAsCollateralEnabledOnUser
-      ? acc + Number(deposit.underlyingBalanceUSD)
-      : acc
-  ), 0)
+  return deposits.reduce(
+    (acc, deposit) =>
+      isValid(deposit.underlyingBalanceUSD) &&
+      deposit.usageAsCollateralEnabledOnUser
+        ? acc + Number(deposit.underlyingBalanceUSD)
+        : acc,
+    0
+  );
 }
 
 function calculateBorrowPowerUsed(debts) {
@@ -702,20 +709,21 @@ function calculateBorrowPowerUsed(debts) {
 }
 
 function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
-  const totalAPY = data.reduce((acc, item) => (
-    isValid(item[indicatorBase]) && isValid(item[indicatorRate])
-      ? acc + Number(item[indicatorBase]) * item[indicatorRate]
-      : acc
-  ), 0)
+  const totalAPY = data.reduce(
+    (acc, item) =>
+      isValid(item[indicatorBase]) && isValid(item[indicatorRate])
+        ? acc + Number(item[indicatorBase]) * item[indicatorRate]
+        : acc,
+    0
+  );
   const totalBase = calculateTotalIndicator(data, indicatorBase);
   return totalAPY / totalBase;
-};
+}
 
 function getHealthFactor() {
   const healthFactor = (state.userAccountData?.healthFactor).toFixed(2);
   return formatHealthFactor(healthFactor);
-};
-
+}
 
 function bigMin(_a, _b) {
   const a = Big(_a);
@@ -743,23 +751,16 @@ function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
 }
 
 function getAccountReserveData(userAddress) {
-
   const lpContract = new ethers.Contract(
     config.lendingPoolAddress,
     config.lendingPoolABI.body,
     Ethers.provider().getSigner()
   );
 
-  const userAccountData = lpContract.getUserAccountData(userAddress)
+  const userAccountData = lpContract.getUserAccountData(userAddress);
 
-
-  return userAccountData
+  return userAccountData;
 }
-
-
-
-
-
 
 // update data in async manner
 function updateData(refresh) {
@@ -786,27 +787,42 @@ function updateData(refresh) {
         supportPermit: true,
       },
     });
-    getMarketsData(state.chainId || DEFAULT_CHAIN_ID).then((marketsDataResponse) => {
-      if (!marketsDataResponse) {
-        return;
-      }
-      const marketsData = marketsDataResponse.body;
-      const lendCirculatingSupply = Number(marketsData.lendTotalSupply) - marketsData.lendTotalLocked
-      const totalValueLocked = calculateTotalIndicator(markets, "totalValueLockedUSD")
-      const totalDepositBalanceUSD = calculateTotalIndicator(markets, "totalDepositBalanceUSD")
-      const totalBorrowBalanceUSD = calculateTotalIndicator(markets, "totalBorrowBalanceUSD")
-      const globalHealthFactor = isValid(totalBorrowBalanceUSD) && isValid(totalValueLocked) ? totalValueLocked / totalBorrowBalanceUSD : 0
-      // const totalLoanOriginations = calculateTotalIndicator(markets, "totalDepositBalanceUSD")
-      State.update({
-        marketsData: {
-          ...marketsData,
-          totalBorrowBalanceUSD,
-          lendCirculatingSupply,
-          globalHealthFactor,
-          totalDepositBalanceUSD
+    getMarketsData(state.chainId || DEFAULT_CHAIN_ID).then(
+      (marketsDataResponse) => {
+        if (!marketsDataResponse) {
+          return;
         }
-      })
-    });
+        const marketsData = marketsDataResponse.body;
+        const lendCirculatingSupply =
+          Number(marketsData.lendTotalSupply) - marketsData.lendTotalLocked;
+        const totalValueLocked = calculateTotalIndicator(
+          markets,
+          "totalValueLockedUSD"
+        );
+        const totalDepositBalanceUSD = calculateTotalIndicator(
+          markets,
+          "totalDepositBalanceUSD"
+        );
+        const totalBorrowBalanceUSD = calculateTotalIndicator(
+          markets,
+          "totalBorrowBalanceUSD"
+        );
+        const globalHealthFactor =
+          isValid(totalBorrowBalanceUSD) && isValid(totalValueLocked)
+            ? totalValueLocked / totalBorrowBalanceUSD
+            : 0;
+        // const totalLoanOriginations = calculateTotalIndicator(markets, "totalDepositBalanceUSD")
+        State.update({
+          marketsData: {
+            ...marketsData,
+            totalBorrowBalanceUSD,
+            lendCirculatingSupply,
+            globalHealthFactor,
+            totalDepositBalanceUSD,
+          },
+        });
+      }
+    );
 
     // check abi loaded
     if (
@@ -902,17 +918,30 @@ function updateUserSupplies(marketsMapping, refresh) {
         //       supportPermit: true,
         //     }
         //   : {}),
-        userAvailableLiquidityUSD: Number(userDeposit.underlyingBalance) * Number(market.liquidationThreshold) / 100,
+        userAvailableLiquidityUSD:
+          (Number(userDeposit.underlyingBalance) *
+            Number(market.liquidationThreshold)) /
+          100,
       };
     });
 
     State.update({
       yourSupplies: {
         deposits: deposits,
-        userTotalAvailableLiquidityUSD: calculateTotalIndicator(deposits, "userAvailableLiquidityUSD"),
-        userTotalDepositUSD: calculateTotalIndicator(deposits, "underlyingBalanceUSD"),
+        userTotalAvailableLiquidityUSD: calculateTotalIndicator(
+          deposits,
+          "userAvailableLiquidityUSD"
+        ),
+        userTotalDepositUSD: calculateTotalIndicator(
+          deposits,
+          "underlyingBalanceUSD"
+        ),
         userTotalCollateralUSD: calculateUserTotalCollateralUSD(deposits),
-        userAPYSupplies: calculateUserTotalAPY(deposits, "underlyingBalanceUSD", "supplyAPY"),
+        userAPYSupplies: calculateUserTotalAPY(
+          deposits,
+          "underlyingBalanceUSD",
+          "supplyAPY"
+        ),
       },
     });
 
@@ -948,7 +977,7 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       return;
     }
     const userDebts = userDebtsResponse.body;
-    console.log("userDebts", userDebts)
+
     const debts = markets
       .map((market) => {
         const userDebt = userDebts.debts.find(
@@ -1003,7 +1032,11 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       ...userDebts,
       userTotalDebtUSD: calculateTotalIndicator(debts, "variableBorrowsUSD"),
       borrowPowerUsed: calculateBorrowPowerUsed(debts),
-      userAPYBorrows: calculateUserTotalAPY(debts, "variableBorrowsUSD", "variableBorrowAPY"),
+      userAPYBorrows: calculateUserTotalAPY(
+        debts,
+        "variableBorrowsUSD",
+        "variableBorrowAPY"
+      ),
       debts: debts,
     };
     const yourBorrows = {
@@ -1025,7 +1058,7 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       yourBorrows: {
         ...state.yourBorrows,
         healthFactor: getHealthFactor(),
-      }
+      },
     });
 
     if (
@@ -1078,8 +1111,9 @@ const body = loading ? (
       {state.walletConnected
         ? state.isChainSupported
           ? "Loading..."
-          : `Please switch network to ${getNetworkConfig(DEFAULT_CHAIN_ID).chainName
-          }`
+          : `Please switch network to ${
+              getNetworkConfig(DEFAULT_CHAIN_ID).chainName
+            }`
         : "Connect your wallet to see your supplies, borrowings, and open positions."}
       <Widget
         src={`${config.ownerId}/widget/Lendle.Card.Markets`}
@@ -1117,24 +1151,34 @@ const body = loading ? (
           src={`${config.ownerId}/widget/Lendle.HeroData`}
           props={{
             config,
-            netWorth: `$ ${state.assetsToBorrow?.netWorthUSD
-              ? Big(state.assetsToBorrow.netWorthUSD).toFixed(2)
-              : "-"
-              }`,
-            netApy: `${state.assetsToBorrow?.netAPY
-              ? Number(
-                Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
-              ) === 0
-                ? "0.00"
-                : Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
-              : "-"
-              }%`,
+            netWorth: `$ ${
+              state.assetsToBorrow?.netWorthUSD
+                ? Big(state.assetsToBorrow.netWorthUSD).toFixed(2)
+                : "-"
+            }`,
+            netApy: `${
+              state.assetsToBorrow?.netAPY
+                ? Number(
+                    Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
+                  ) === 0
+                  ? "0.00"
+                  : Big(state.assetsToBorrow.netAPY).times(100).toFixed(2)
+                : "-"
+            }%`,
             healthFactor: state.yourBorrows.healthFactor,
-            totalValueLockedUSD: Number(state.marketsData.totalValueLockedUSD).toFixed(0),
-            totalLoanOriginations: Number(state.marketsData.cumulativeBorrowUSD).toFixed(0),
-            currentLoans: Number(state.marketsData.totalBorrowBalanceUSD).toFixed(0),
+            totalValueLockedUSD: Number(
+              state.marketsData.totalValueLockedUSD
+            ).toFixed(0),
+            totalLoanOriginations: Number(
+              state.marketsData.cumulativeBorrowUSD
+            ).toFixed(0),
+            currentLoans: Number(
+              state.marketsData.totalBorrowBalanceUSD
+            ).toFixed(0),
             // lendTotalSupply: Number(state.marketsData.lendTotalSupply).toFixed(0),
-            lendCirculatingSupply: Number(state.marketsData.lendCirculatingSupply).toFixed(0),
+            lendCirculatingSupply: Number(
+              state.marketsData.lendCirculatingSupply
+            ).toFixed(0),
             globalHealthFactor: state.marketsData.globalHealthFactor.toFixed(2),
             showHealthFactor:
               state.yourBorrows &&
@@ -1220,11 +1264,12 @@ const body = loading ? (
               config,
               chainId: state.chainId,
               assetsToBorrow: state.assetsToBorrow,
-              showBorrowModal: state.showBorrowModal,
+              showBorrowModal: state.showAssetBorrowModal,
               yourBorrows: state.yourBorrows,
               yourSupplies: state.yourSupplies,
-              setShowBorrowModal: (isShow) =>
-                State.update({ showBorrowModal: isShow }),
+              setShowBorrowModal: (isShow) => {
+                State.update({ showAssetBorrowModal: isShow });
+              },
               formatHealthFactor,
               onActionSuccess,
               borrowETHGas,
