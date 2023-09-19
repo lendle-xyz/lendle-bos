@@ -916,12 +916,12 @@ function updateUserSupplies(marketsMapping, refresh) {
       return {
         ...market,
         ...userDeposit,
-        ...(market.symbol === config.nativeWrapCurrency.symbol
-          ? {
-              ...config.nativeCurrency,
-              supportPermit: true,
-            }
-          : {}),
+        // ...(market.symbol === config.nativeWrapCurrency.symbol
+        //   ? {
+        //       ...config.nativeCurrency,
+        //       supportPermit: true,
+        //     }
+        //   : {}),
         userAvailableLiquidityUSD: Number(userDeposit.underlyingBalance) * Number(market.liquidationThreshold) / 100,
         };
       });
