@@ -201,8 +201,9 @@ function debounce(fn, wait) {
 }
 
 function getNewHealthFactor() {
+  const userAvailableLiquidityUSD = userTotalDebtUSD * healthFactor;
   const newTotalDebtUSD = userTotalDebtUSD + Number(state.amountInUSD)
-  return (userTotalAvailableLiquidityUSD / newTotalDebtUSD).toFixed(2);
+  return userAvailableLiquidityUSD / newTotalDebtUSD;
 };
 
 const updateNewHealthFactor = () => {
@@ -431,7 +432,7 @@ return (
                           <div style={{ textAlign: "right" }}>
                             <WhiteTexture style={{ display: "flex",  justifyContent: "flex-end"}}>
                               <div style={healthFactor <= 1.1 ? { color: "#f04438" } : healthFactor < 1.5 ? { color: "#F79009" } : { color: "#12b76a" }}>
-                                {healthFactor}
+                                {Number(healthFactor).toFixed(2)}
                               </div>
                               <img
                                 src={`${config.ipfsPrefix}/bafkreiesqu5jyvifklt2tfrdhv6g4h6dubm2z4z4dbydjd6if3bdnitg7q`}
@@ -439,7 +440,7 @@ return (
                                 height={16}
                               />
                               <div style={state.newHealthFactor <= 1.1 ? { color: "#f04438" } : state.newHealthFactor < 1.5 ? { color: "#F79009" } : { color: "#12b76a" }}>
-                                {" "}{state.newHealthFactor}
+                                {" "}{isNaN(state.newHealthFactor) ? state.newHealthFactor : Number(state.newHealthFactor).toFixed(2)}
                               </div>
                             </WhiteTexture>
                             <WhiteTexture>

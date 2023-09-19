@@ -20,6 +20,9 @@ const HIDE_TOKENS_SYMBOL = ["MNT"];
 
 const GRAPHQL_URL =
   "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
+const GRAPHQL_URL_PRICE =
+  "https://graph.fusionx.finance/subgraphs/name/fusionx/exchange";
+const DEFAULT_LENDLE_PRICE = 0.052;
 
 // Get AAVE network config by chain id
 function getNetworkConfig(chainId) {
@@ -366,7 +369,7 @@ function getMarketsData(chainId) {
       totalSupply
       totalLocked
     }
-    stakers(first: $first) {
+    stakers(first: 1000) {
       totalLocked
       totalStaked
     }
@@ -381,16 +384,19 @@ function getMarketsData(chainId) {
     const financialsDailySnapshots = res.body.data.financialsDailySnapshots;
     const feesDailySnapshots = res.body.data.feesDailySnapshots;
     const stakers = res.body.data.stakers;
-    // const lendTotalLocked = stakers.reduce(({ totalLocked }) => !amount || Number(amount) === 0
-    //   ? acc
-    //   : acc + Number(totalLocked.slice(0, -18))
-    // , 0)
+    const lendTotalLocked = stakers.reduce(
+      (acc, item) =>
+        item.totalLocked == 0
+          ? acc
+          : acc + Number(item.totalLocked.slice(0, -18)),
+      0
+    );
     return {
       body: {
         totalValueLockedUSD: financialsDailySnapshots[0].totalValueLockedUSD,
         cumulativeBorrowUSD: financialsDailySnapshots[0].cumulativeBorrowUSD,
         lendTotalSupply: feesDailySnapshots[0].totalSupply.slice(0, -18),
-        lendTotalLocked: feesDailySnapshots[0].totalLocked.slice(0, -18),
+        lendTotalLocked,
       },
     };
   });
@@ -616,6 +622,37 @@ function getConfig(network) {
 }
 const config = getConfig(context.networkId);
 
+//get LENDLE price
+function getLendPrice(chainId, address) {
+  const query = `
+  query {
+    token(id: "0x25356aeca4210ef7553140edb9b8026089e49396"){
+      name
+      derivedUSD
+      derivedNATIVE
+    }
+  }
+  `;
+  return asyncFetch(GRAPHQL_URL_PRICE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  }).then((res) => {
+    if (!res.body.data.token) {
+      return {
+        body: {
+          price: DEFAULT_LENDLE_PRICE,
+        },
+      };
+    }
+    return {
+      body: {
+        price: res.body.data.token.derivedUSD,
+      },
+    };
+  });
+}
+
 // App states
 State.init({
   imports: {},
@@ -636,6 +673,7 @@ State.init({
   selectTab: "supply", // supply | borrow
   markets: undefined,
   marketsData: undefined,
+  lendlePrice: undefined,
   userAccountData: {},
 });
 
@@ -685,7 +723,9 @@ function calculateAvailableBorrows({
 function calculateTotalIndicator(data, indicator) {
   return data.reduce(
     (acc, item) =>
-      isValid(item[indicator]) ? acc + Number(item[indicator]) : acc,
+      isValid(item[indicator]) && item.symbol !== "WMNT"
+        ? acc + Number(item[indicator])
+        : acc,
     0
   );
 }
@@ -694,7 +734,8 @@ function calculateUserTotalCollateralUSD(deposits) {
   return deposits.reduce(
     (acc, deposit) =>
       isValid(deposit.underlyingBalanceUSD) &&
-      deposit.usageAsCollateralEnabledOnUser
+      deposit.usageAsCollateralEnabledOnUser &&
+      item.symbol !== "WMNT"
         ? acc + Number(deposit.underlyingBalanceUSD)
         : acc,
     0
@@ -711,7 +752,9 @@ function calculateBorrowPowerUsed(debts) {
 function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
   const totalAPY = data.reduce(
     (acc, item) =>
-      isValid(item[indicatorBase]) && isValid(item[indicatorRate])
+      isValid(item[indicatorBase]) &&
+      isValid(item[indicatorRate]) &&
+      item.symbol !== "WMNT"
         ? acc + Number(item[indicatorBase]) * item[indicatorRate]
         : acc,
     0
@@ -721,7 +764,7 @@ function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
 }
 
 function getHealthFactor() {
-  const healthFactor = (state.userAccountData?.healthFactor).toFixed(2);
+  const healthFactor = state.userAccountData?.healthFactor;
   return formatHealthFactor(healthFactor);
 }
 
@@ -735,7 +778,7 @@ function formatHealthFactor(healthFactor) {
   if (healthFactor === "∞") return healthFactor;
   if (!healthFactor || !isValid(healthFactor)) return "-";
   if (Number(healthFactor) === -1) return "∞";
-  return Big(healthFactor).toFixed(2, ROUND_DOWN);
+  return Big(healthFactor).toFixed(6, ROUND_DOWN);
 }
 
 function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
@@ -811,7 +854,6 @@ function updateData(refresh) {
           isValid(totalBorrowBalanceUSD) && isValid(totalValueLocked)
             ? totalValueLocked / totalBorrowBalanceUSD
             : 0;
-        // const totalLoanOriginations = calculateTotalIndicator(markets, "totalDepositBalanceUSD")
         State.update({
           marketsData: {
             ...marketsData,
@@ -823,6 +865,11 @@ function updateData(refresh) {
         });
       }
     );
+    getLendPrice().then((lendlePrice) => {
+      State.update({
+        lendlePrice: lendlePrice.body.price,
+      });
+    });
 
     // check abi loaded
     if (
@@ -977,7 +1024,6 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       return;
     }
     const userDebts = userDebtsResponse.body;
-
     const debts = markets
       .map((market) => {
         const userDebt = userDebts.debts.find(
@@ -1175,11 +1221,14 @@ const body = loading ? (
             currentLoans: Number(
               state.marketsData.totalBorrowBalanceUSD
             ).toFixed(0),
-            // lendTotalSupply: Number(state.marketsData.lendTotalSupply).toFixed(0),
+            lendTotalSupply: Number(state.marketsData.lendTotalSupply).toFixed(
+              0
+            ),
             lendCirculatingSupply: Number(
               state.marketsData.lendCirculatingSupply
             ).toFixed(0),
             globalHealthFactor: state.marketsData.globalHealthFactor.toFixed(2),
+            lendlePrice: state.lendlePrice,
             showHealthFactor:
               state.yourBorrows &&
               state.yourBorrows.debts &&
