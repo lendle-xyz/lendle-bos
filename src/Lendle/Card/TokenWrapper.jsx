@@ -1,5 +1,6 @@
 const TokenWrapper = styled.div`
   display: flex;
+  align-items: center;
 
   img {
     margin-right: 10px;

@@ -55,6 +55,12 @@ const ButtonGroup = styled.div`
     flex-direction: row;
   }
 `;
+const TokenChain = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  color: #6f6f6f;
+`;
+
 const BorrowButton = ({ data }) => (
   <Widget
     src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
@@ -153,9 +159,9 @@ return (
                                       <div className="token-title">
                                         {row.symbol}
                                       </div>
-                                      <div className="token-chain">
+                                      {/* <div className="token-chain">
                                         {row.name}
-                                      </div>
+                                      </div> */}
                                     </div>,
                                   ],
                                 }}
@@ -172,12 +178,12 @@ return (
                                             7
                                           )}
                                         </div>
-                                        <div>
+                                        <TokenChain>
                                           ${" "}
                                           {Number(
                                             row.variableBorrowsUSD
                                           ).toFixed(2)}
-                                        </div>
+                                        </TokenChain>
                                       </div>
                                     </div>,
                                     <div className="card-data-row">
@@ -225,18 +231,19 @@ return (
                                 height={64}
                                 src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
                               />,
-                              <div>
-                                <div className="token-title">{row.symbol}</div>
-                                <div className="token-chain">{row.name}</div>
+                              <div className="token-title">
+                                {row.symbol}
+                                {/* <div className="token-title">{row.symbol}</div> */}
+                                {/* <div className="token-chain">{row.name}</div> */}
                               </div>,
                             ],
                           }}
                         />,
                         <div>
                           <div>{Number(row.variableBorrows).toFixed(7)}</div>
-                          <div>
+                          <TokenChain>
                             $ {Number(row.variableBorrowsUSD).toFixed(2)}
-                          </div>
+                          </TokenChain>
                         </div>,
                         `${(Number(row.variableBorrowAPY) * 100).toFixed(2)} %`,
                         <ButtonGroup>
