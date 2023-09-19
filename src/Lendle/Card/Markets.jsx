@@ -29,6 +29,11 @@ State.init({
 //     }}
 //   />
 // );
+const TokenChain = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  color: #6f6f6f;
+`;
 
 return (
   <>
@@ -94,9 +99,9 @@ return (
                                   row.marketReferencePriceInUsd
                               ).toFixed(0)}
                             </div>
-                            <div>
+                            <TokenChain>
                               $ {Number(row.totalDepositBalanceUSD).toFixed(0)}
-                            </div>
+                            </TokenChain>
                           </div>,
                           `${(Number(row.supplyAPY) * 100).toFixed(2)} %`,
                           `${(Number(row.variableBorrowAPY) * 100).toFixed(
@@ -109,9 +114,9 @@ return (
                                   row.marketReferencePriceInUsd
                               ).toFixed(0)}
                             </div>
-                            <div>
+                            <TokenChain>
                               $ {Number(row.totalBorrowBalanceUSD).toFixed(0)}
-                            </div>
+                            </TokenChain>
                           </div>,
                           // <VestButton data={row} />,
                         ]
@@ -170,12 +175,12 @@ return (
                                                   row.marketReferencePriceInUsd
                                                 ).toFixed(0)}
                                               </div>
-                                              <div className="card-data-usd-price">
+                                              <TokenChain>
                                                 ${" "}
                                                 {Number(
                                                   row.totalDepositBalanceUSD
                                                 ).toFixed(0)}
-                                              </div>
+                                              </TokenChain>
                                             </div>
                                           </div>,
                                           <div className="card-data-row">
@@ -205,12 +210,12 @@ return (
                                                   row.marketReferencePriceInUsd
                                                 ).toFixed(0)}
                                               </div>
-                                              <div className="card-data-usd-price">
+                                              <TokenChain>
                                                 ${" "}
                                                 {Number(
                                                   row.totalBorrowBalanceUSD
                                                 ).toFixed(0)}
-                                              </div>
+                                              </TokenChain>
                                             </div>
                                           </div>,
                                         ]

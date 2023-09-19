@@ -66,6 +66,12 @@ const AlertContainer = styled.div`
     }
   }
 `;
+const TokenChain = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  color: #6f6f6f;
+`;
+
 return (
   <>
     <Widget
@@ -159,12 +165,12 @@ return (
                                             7
                                           )}
                                         </div>
-                                        <div>
+                                        <TokenChain>
                                           ${" "}
                                           {Number(
                                             row.availableBorrowsUSD
                                           ).toFixed(2)}
-                                        </div>
+                                        </TokenChain>
                                       </div>
                                     </div>,
                                     <div className="card-data-row">
@@ -223,9 +229,9 @@ return (
                         />,
                         <div>
                           <div>{Number(row.availableBorrows).toFixed(7)}</div>
-                          <div>
+                          <TokenChain>
                             $ {Number(row.availableBorrowsUSD).toFixed(2)}
-                          </div>
+                          </TokenChain>
                         </div>,
                         `${(Number(row.variableBorrowAPY) * 100).toFixed(2)} %`,
                         <BorrowButton

@@ -18,6 +18,12 @@ State.init({
   data: undefined,
 });
 
+const TokenChain = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  color: #6f6f6f;
+`;
+
 const SupplyButton = ({ data }) => (
   <Widget
     src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
@@ -87,7 +93,7 @@ return (
                     />,
                     <div>
                       <div>{Number(row.balance).toFixed(7)}</div>
-                      <div>$ {row.balanceInUSD}</div>
+                      <TokenChain>$ {row.balanceInUSD}</TokenChain>
                     </div>,
                     `${(Number(row.supplyAPY) * 100).toFixed(2)} %`,
                     <div style={{ paddingLeft: "50px" }}>
@@ -151,7 +157,7 @@ return (
                                         <div>
                                           {Number(row.balance).toFixed(7)}
                                         </div>
-                                        <div>$ {row.balanceInUSD}</div>
+                                        <TokenChain>$ {row.balanceInUSD}</TokenChain>
                                       </div>
                                     </div>,
                                     <div className="card-data-row">
