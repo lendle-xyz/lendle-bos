@@ -17,6 +17,7 @@ const ETH_TOKEN = { name: "Mantle", symbol: "MNT", decimals: 18 };
 const WETH_TOKEN = { name: "Wrapped Mantle", symbol: "WMNT", decimals: 18 };
 const ACTUAL_BORROW_AMOUNT_RATE = 1;
 const HIDE_TOKENS_SYMBOL = ["MNT"];
+const ANNUAL_EMISSION = 8056202.6244384;
 
 const GRAPHQL_URL =
   "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
@@ -343,6 +344,12 @@ function getMarkets(chainId) {
       liquidationThreshold: market.liquidationThreshold,
       liquidationPenalty: market.liquidationPenalty,
       totalValueLockedUSD: market.totalValueLockedUSD,
+      aprSupply: (
+        (market.supplyAllocPoint / market.totalAllocPoint) * ANNUAL_EMISSION * state.lendlePrice
+        ) / market.totalDepositBalanceUSD,
+      aprBorrow: (
+        (market.borrowAllocPoint / market.totalAllocPoint) * ANNUAL_EMISSION * state.lendlePrice
+        ) / market.totalBorrowBalanceUSD,
     }));
     return {
       body: mappedMarkets,
@@ -673,7 +680,7 @@ State.init({
   selectTab: "supply", // supply | borrow
   markets: undefined,
   marketsData: undefined,
-  lendlePrice: undefined,
+  lendlePrice: DEFAULT_LENDLE_PRICE,
   userAccountData: {},
 });
 
