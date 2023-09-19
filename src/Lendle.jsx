@@ -602,7 +602,7 @@ function getConfig(network) {
   switch (network) {
     case "mainnet":
       return {
-        ownerId: "plakhuta.near",
+        ownerId: "lendle.near",
         nodeUrl: "https://rpc.mainnet.near.org",
         ipfsPrefix: "https://ipfs.near.social/ipfs",
         ipfsPrefixLendle: "https://ipfs.io/ipfs",

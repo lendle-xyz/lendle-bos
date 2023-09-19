@@ -10,7 +10,7 @@ irm https://github.com/mpeterdev/bos-loader/releases/download/v0.7.1/bos-loader-
 run
 C:\Users\<user>\.cargo\bin\bos-loader.exe lendle.near
 
-https://near.org/flags
+https://near.org/flags - > http://127.0.0.1:3030
 https://near.org/lendle.near/widget/Lendle
 ## Mantle network
 
