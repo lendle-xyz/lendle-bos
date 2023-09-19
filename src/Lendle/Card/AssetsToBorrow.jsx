@@ -67,9 +67,12 @@ const AlertContainer = styled.div`
   }
 `;
 const TokenChain = styled.div`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: #6f6f6f;
+  @media (min-width: 640px) {
+    font-size: 16px;
+  }
 `;
 
 return (
@@ -176,10 +179,18 @@ return (
                                     <div className="card-data-row">
                                       <div className="card-data-key">
                                         APY, variable
+                                        <div>
+                                          APR
+                                        </div>
                                       </div>
-                                      <div className="card-data-value">{`${(
-                                        Number(row.variableBorrowAPY) * 100
-                                      ).toFixed(2)} %`}</div>
+                                      <div className="card-data-value">
+                                        <div>
+                                          {`${(Number(row.variableBorrowAPY) * 100).toFixed(2)} %`}
+                                        </div>
+                                        <div>
+                                          {(row.aprBorrow * 100).toFixed(2)}{" %"}
+                                        </div>
+                                        </div>
                                     </div>,
                                   ],
                                 }}
@@ -233,7 +244,14 @@ return (
                             $ {Number(row.availableBorrowsUSD).toFixed(2)}
                           </TokenChain>
                         </div>,
-                        `${(Number(row.variableBorrowAPY) * 100).toFixed(2)} %`,
+                        <div>
+                          <div>
+                            {`${(Number(row.variableBorrowAPY) * 100).toFixed(2)} %`}
+                          </div>
+                          <TokenChain>
+                            {(row.aprBorrow * 100).toFixed(2)}{" % APR"}
+                          </TokenChain>
+                        </div>,
                         <BorrowButton
                           data={{
                             ...row,

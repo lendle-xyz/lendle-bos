@@ -19,9 +19,12 @@ State.init({
 });
 
 const TokenChain = styled.div`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: #6f6f6f;
+  @media (min-width: 640px) {
+    font-size: 16px;
+  }
 `;
 
 const SupplyButton = ({ data }) => (
@@ -91,21 +94,25 @@ return (
                         ],
                       }}
                     />,
+                    
                     <div>
                       <div>{Number(row.balance).toFixed(7)}</div>
                       <TokenChain>$ {row.balanceInUSD}</TokenChain>
                     </div>,
-                    `${(Number(row.supplyAPY) * 100).toFixed(2)} %`,
+                    <div>
+                      <div>
+                        {`${(Number(row.supplyAPY) * 100).toFixed(2)} %`}
+                      </div>
+                      <TokenChain>
+                        {(row.aprSupply * 100).toFixed(2)}{" % APR"}
+                      </TokenChain>
+                    </div>,
                     <div style={{ paddingLeft: "50px" }}>
                       {(row.isIsolated ||
                         (!row.isIsolated && !row.usageAsCollateralEnabled)) &&
                         "—"}
                       {!row.isIsolated && row.usageAsCollateralEnabled && (
-                        <img
-                          src={`${config.ipfsPrefix}/bafkreibsy5fzn67veowyalveo6t34rnqvktmok2zutdsp4f5slem3grc3i`}
-                          width={16}
-                          height={16}
-                        />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" heigh="16"><path stroke="#12B76A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.333 4 6 11.333 2.667 8"></path></svg>
                       )}
                     </div>,
                     <SupplyButton data={row} />,
@@ -163,10 +170,18 @@ return (
                                     <div className="card-data-row">
                                       <div className="card-data-key">
                                         Supply APY
+                                        <div>
+                                          Supply APR
+                                        </div>
                                       </div>
-                                      <div className="card-data-value">{`${(
-                                        Number(row.supplyAPY) * 100
-                                      ).toFixed(2)} %`}</div>
+                                        <div className="card-data-value">
+                                          <div>
+                                            {`${(Number(row.supplyAPY) * 100).toFixed(2)} %`}
+                                          </div>
+                                          <div>
+                                            {(row.aprSupply * 100).toFixed(2)}{" %"}
+                                          </div>
+                                        </div>
                                     </div>,
                                     <div className="card-data-row">
                                       <div className="card-data-key">
@@ -184,11 +199,7 @@ return (
                                               />
                                             )}
                                             {!row.usageAsCollateralEnabled && (
-                                              <img
-                                                src={`${config.ipfsPrefix}/bafkreie5skej6q2tik3qa3yldkep4r465poq33ay55uzp2p6hty2ifhkmq`}
-                                                width={16}
-                                                height={16}
-                                              />
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" heigh="16"><path stroke="#12B76A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.333 4 6 11.333 2.667 8"></path></svg>
                                             )}
                                           </>
                                         )}

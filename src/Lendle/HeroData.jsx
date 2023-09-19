@@ -45,6 +45,7 @@ const KVData = styled.div`
   .key {
     font-size: 14px;
     font-weight: 500;
+    color: #A097BE;
     @media (min-width: 640px) {
       font-size: 12px;
     }
