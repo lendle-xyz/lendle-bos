@@ -748,7 +748,7 @@ function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
 };
 
 function getHealthFactor() {
-  const healthFactor = (state.userAccountData?.healthFactor).toFixed(2);
+  const healthFactor = (state.userAccountData?.healthFactor);
   return formatHealthFactor(healthFactor);
 };
 
@@ -763,7 +763,7 @@ function formatHealthFactor(healthFactor) {
   if (healthFactor === "∞") return healthFactor;
   if (!healthFactor || !isValid(healthFactor)) return "-";
   if (Number(healthFactor) === -1) return "∞";
-  return Big(healthFactor).toFixed(2, ROUND_DOWN);
+  return Big(healthFactor).toFixed(6, ROUND_DOWN);
 }
 
 function batchBalanceOf(chainId, userAddress, tokenAddresses, abi) {
@@ -988,7 +988,6 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
       return;
     }
     const userDebts = userDebtsResponse.body;
-    console.log("userDebts", userDebts)
     const debts = markets
       .map((market) => {
         const userDebt = userDebts.debts.find(

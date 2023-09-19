@@ -41,7 +41,7 @@ function getInformers() {
     },
     {
       title: "Health factor",
-      data: yourBorrows?.healthFactor ? yourBorrows.healthFactor : "-",
+      data: yourBorrows?.healthFactor && !isNaN(yourBorrows.healthFactor) ? Number(yourBorrows.healthFactor).toFixed(2) : "-",
     },
   ];
 };
