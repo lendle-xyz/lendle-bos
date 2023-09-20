@@ -344,12 +344,16 @@ function getMarkets(chainId) {
       liquidationThreshold: market.liquidationThreshold,
       liquidationPenalty: market.liquidationPenalty,
       totalValueLockedUSD: market.totalValueLockedUSD,
-      aprSupply: (
-        (market.supplyAllocPoint / market.totalAllocPoint) * ANNUAL_EMISSION * state.lendlePrice
-        ) / market.totalDepositBalanceUSD,
-      aprBorrow: (
-        (market.borrowAllocPoint / market.totalAllocPoint) * ANNUAL_EMISSION * state.lendlePrice
-        ) / market.totalBorrowBalanceUSD,
+      aprSupply:
+        ((market.supplyAllocPoint / market.totalAllocPoint) *
+          ANNUAL_EMISSION *
+          state.lendlePrice) /
+        market.totalDepositBalanceUSD,
+      aprBorrow:
+        ((market.borrowAllocPoint / market.totalAllocPoint) *
+          ANNUAL_EMISSION *
+          state.lendlePrice) /
+        market.totalBorrowBalanceUSD,
     }));
     return {
       body: mappedMarkets,
@@ -843,6 +847,7 @@ function updateData(refresh) {
       ...{
         ...config.nativeCurrency,
         supportPermit: true,
+        isNativeMarket: true,
       },
     });
     getMarketsData(state.chainId || DEFAULT_CHAIN_ID).then(
@@ -974,12 +979,12 @@ function updateUserSupplies(marketsMapping, refresh) {
       return {
         ...market,
         ...userDeposit,
-        // ...(market.symbol === config.nativeWrapCurrency.symbol
-        //   ? {
-        //       ...config.nativeCurrency,
-        //       supportPermit: true,
-        //     }
-        //   : {}),
+        ...(market.symbol === config.nativeCurrency.symbol
+          ? {
+              ...config.nativeCurrency,
+              supportPermit: true,
+            }
+          : {}),
         userAvailableLiquidityUSD:
           (Number(userDeposit.underlyingBalance) *
             Number(market.liquidationThreshold)) /
@@ -1022,7 +1027,6 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
   if (!markets || !assetsToSupply) {
     return;
   }
-
   const prevYourBorrows = state.yourBorrows;
   // userDebts depends on the balance from assetsToSupply
   const assetsToSupplyMap = assetsToSupply.reduce((prev, cur) => {
@@ -1062,12 +1066,12 @@ function updateUserDebts(markets, assetsToSupply, refresh) {
         return {
           ...market,
           ...userDebt,
-          // ...(market.symbol === config.nativeWrapCurrency.symbol
-          //   ? {
-          //       ...config.nativeCurrency,
-          //       supportPermit: true,
-          //     }
-          //   : {}),
+          ...(market.symbol === config.nativeCurrency.symbol
+            ? {
+                ...config.nativeCurrency,
+                supportPermit: true,
+              }
+            : {}),
           availableBorrows: calculateAvailableBorrows({
             availableBorrowsUSD,
             marketReferencePriceInUsd: market.marketReferencePriceInUsd,
