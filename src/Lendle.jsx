@@ -779,7 +779,8 @@ function calculateUserTotalAPY(data, indicatorBase, indicatorRate) {
     0
   );
   const totalBase = calculateTotalIndicator(data, indicatorBase);
-  return totalAPY / totalBase;
+
+  return !totalAPY || !totalBase ? 0 : totalAPY / totalBase;
 }
 
 function getHealthFactor() {
