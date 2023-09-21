@@ -107,7 +107,7 @@ return (
                         {(row.aprSupply * 100).toFixed(2)}{" % APR"}
                       </TokenChain>
                     </div>,
-                    <div style={{ paddingLeft: "50px" }}>
+                    <div>
                       {(row.isIsolated ||
                         (!row.isIsolated && !row.usageAsCollateralEnabled)) &&
                         "—"}

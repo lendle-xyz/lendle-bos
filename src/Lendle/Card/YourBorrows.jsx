@@ -63,7 +63,7 @@ const TokenChain = styled.div`
 
 const BorrowButton = ({ data }) => (
   <Widget
-    src={`${config.ownerId}/widget/Lendle.PrimaryButton`}
+    src={`${config.ownerId}/widget/Lendle.SecondButton`}
     props={{
       config,
       children: "Borrow",

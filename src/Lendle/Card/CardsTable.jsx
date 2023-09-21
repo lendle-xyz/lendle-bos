@@ -20,8 +20,12 @@ const CardsTable = styled.div`
     font-weight: normal;
   }
   tr td {
+    width: 18%;
     padding: 15px 0;
     border-top: 1px solid #42307d;
+  }
+  tr td:first-child {
+   width: 28%;
   }
 
   display: none;

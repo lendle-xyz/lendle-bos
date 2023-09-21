@@ -6,6 +6,8 @@ const {
   onActionSuccess,
   showWithdrawModal,
   setShowWithdrawModal,
+  showCollateralModal,
+  setShowCollateralModal,
   withdrawETHGas,
   withdrawERC20Gas,
   formatHealthFactor,
@@ -58,6 +60,19 @@ const WithdrawButton = ({ data }) => (
       onClick: () => {
         State.update({ data });
         setShowWithdrawModal(true);
+      },
+    }}
+  />
+);
+const CollateralSwitch = ({ data }) => (
+  <Widget
+    src={`${config.ownerId}/widget/Lendle.Card.Switch`}
+    props={{
+      config,
+      data,
+      onClick: () => {
+        State.update({ data });
+        // setShowCollateralModal(true);
       },
     }}
   />
@@ -179,7 +194,7 @@ return (
                 src={`${config.ownerId}/widget/Lendle.Card.CardsTable`}
                 props={{
                   config,
-                  headers: ["Asset", "Supply Balance", "Supply APY", ""],
+                  headers: ["Asset", "Supply Balance", "Supply APY", "Collateral", ""],
                   data: yourSupplies.deposits.map((row) => {
                     if (hideTokens.includes(row.symbol)) {return []}
                     return [
@@ -207,6 +222,9 @@ return (
                         </TokenChain>
                       </div>,
                       `${(Number(row.supplyAPY) * 100).toFixed(2)} %`,
+                      <div>
+                        <CollateralSwitch data={row}/>
+                      </div>,
                       <WithdrawButton data={row} />,
                     ];
                   }),
@@ -236,5 +254,22 @@ return (
         }}
       />
     )}
+    {/* {showCollateralModal && (
+      <Widget
+        src={`${config.ownerId}/widget/Lendle.Modal.CollateralModal`}
+        props={{
+          config,
+          chainId,
+          data: {
+            ...state.data,
+          },
+          onActionSuccess,
+          withdrawETHGas,
+          withdrawERC20Gas,
+          formatHealthFactor,
+          onRequestClose: () => setShowCollateralModal(false),
+        }}
+      />
+    )} */}
   </>
 );
