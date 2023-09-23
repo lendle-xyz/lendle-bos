@@ -24,7 +24,7 @@ function getInformers() {
     {
       title: "Balance",
       data: yourBorrows?.userTotalDebtUSD
-        ? `$ ${(yourBorrows.userTotalDebtUSD).toFixed(2)}`
+        ? `$ ${yourBorrows.userTotalDebtUSD.toFixed(2)}`
         : "-",
     },
     {
@@ -41,10 +41,10 @@ function getInformers() {
     },
     {
       title: "Health factor",
-      data: yourBorrows?.healthFactor && !isNaN(yourBorrows.healthFactor) ? Number(yourBorrows.healthFactor).toFixed(2) : "-",
+      data: formatHealthFactor(yourBorrows.healthFactor),
     },
   ];
-};
+}
 
 const ButtonGroup = styled.div`
   display: flex;
@@ -109,16 +109,14 @@ return (
         },
         title: "Your borrows",
         headerData:
-          !yourBorrows?.debts || yourBorrows.debts.length === 0 ? (
-            null
-          ) : (
-            getInformers().map(({title, data}) => (
-              <Widget
-                src={`${config.ownerId}/widget/Lendle.Card.Informer`}
-                props={{config, title, data}}
-              />
-            ))
-          ),
+          !yourBorrows?.debts || yourBorrows.debts.length === 0
+            ? null
+            : getInformers().map(({ title, data }) => (
+                <Widget
+                  src={`${config.ownerId}/widget/Lendle.Card.Informer`}
+                  props={{ config, title, data }}
+                />
+              )),
         body: (
           <>
             {!debts || debts.length === 0 ? (
@@ -132,87 +130,94 @@ return (
             ) : (
               <>
                 {/* mobile view */}
-                {debts.map((row) => hideTokens.includes(row.symbol) ? null : (
-                  <Widget
-                    src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
-                    props={{
-                      children: [
-                        <Widget
-                          src={`${config.ownerId}/widget/Lendle.Card.Divider`}
-                          props={{ config }}
-                        />,
-                        <Widget
-                          src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
-                          props={{
-                            config,
-                            children: [
-                              <Widget
-                                src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
-                                props={{
-                                  children: [
-                                    <img
-                                      width={64}
-                                      height={64}
-                                      src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
-                                    />,
-                                    <div>
-                                      <div className="token-title">
-                                        {row.symbol}
-                                      </div>
-                                      {/* <div className="token-chain">
+                {debts.map((row) =>
+                  hideTokens.includes(row.symbol) ? null : (
+                    <Widget
+                      src={`${config.ownerId}/widget/Lendle.Card.CardContainer`}
+                      props={{
+                        children: [
+                          <Widget
+                            src={`${config.ownerId}/widget/Lendle.Card.Divider`}
+                            props={{ config }}
+                          />,
+                          <Widget
+                            src={`${config.ownerId}/widget/Lendle.Card.CardsBody`}
+                            props={{
+                              config,
+                              children: [
+                                <Widget
+                                  src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
+                                  props={{
+                                    children: [
+                                      <img
+                                        width={64}
+                                        height={64}
+                                        src={`https://raw.githubusercontent.com/lendle-xyz/lendle-bos/main/src/images/${row.symbol.toLowerCase()}.svg`}
+                                      />,
+                                      <div>
+                                        <div className="token-title">
+                                          {row.symbol}
+                                        </div>
+                                        {/* <div className="token-chain">
                                         {row.name}
                                       </div> */}
-                                    </div>,
-                                  ],
-                                }}
-                              />,
-                              <Widget
-                                src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
-                                props={{
-                                  children: [
-                                    <div className="card-data-row">
-                                      <div className="card-data-key">Debt</div>
-                                      <div className="card-data-value">
-                                        <div>
-                                          {Number(row.variableBorrows).toFixed(
-                                            7
-                                          )}
-                                        </div>
-                                        <TokenChain>
-                                          ${" "}
-                                          {Number(
-                                            row.variableBorrowsUSD
-                                          ).toFixed(2)}
-                                        </TokenChain>
-                                      </div>
-                                    </div>,
-                                    <div className="card-data-row">
-                                      <div className="card-data-key">APY</div>
-                                      <div className="card-data-value">{`${(
-                                        Number(row.variableBorrowAPY) * 100
-                                      ).toFixed(2)} %`}</div>
-                                    </div>,
-                                  ],
-                                }}
-                              />,
-                              <ButtonGroup>
-                                <RepayButton
-                                  data={{ ...row, ...yourBorrowsCommonParams }}
-                                />
-                                <BorrowButton
-                                  data={{
-                                    ...row,
-                                    ...yourBorrowsCommonParams,
+                                      </div>,
+                                    ],
                                   }}
-                                />
-                              </ButtonGroup>,
-                            ],
-                          }}
-                        />,
-                      ],
-                    }}
-                  />
-                ))}
+                                />,
+                                <Widget
+                                  src={`${config.ownerId}/widget/Lendle.Card.CardDataWrapper`}
+                                  props={{
+                                    children: [
+                                      <div className="card-data-row">
+                                        <div className="card-data-key">
+                                          Debt
+                                        </div>
+                                        <div className="card-data-value">
+                                          <div>
+                                            {Number(
+                                              row.variableBorrows
+                                            ).toFixed(7)}
+                                          </div>
+                                          <TokenChain>
+                                            ${" "}
+                                            {Number(
+                                              row.variableBorrowsUSD
+                                            ).toFixed(2)}
+                                          </TokenChain>
+                                        </div>
+                                      </div>,
+                                      <div className="card-data-row">
+                                        <div className="card-data-key">APY</div>
+                                        <div className="card-data-value">{`${(
+                                          Number(row.variableBorrowAPY) * 100
+                                        ).toFixed(2)} %`}</div>
+                                      </div>,
+                                    ],
+                                  }}
+                                />,
+                                <ButtonGroup>
+                                  <RepayButton
+                                    data={{
+                                      ...row,
+                                      ...yourBorrowsCommonParams,
+                                    }}
+                                  />
+                                  <BorrowButton
+                                    data={{
+                                      ...row,
+                                      ...yourBorrowsCommonParams,
+                                    }}
+                                  />
+                                </ButtonGroup>,
+                              ],
+                            }}
+                          />,
+                        ],
+                      }}
+                    />
+                  )
+                )}
                 {/* pc view */}
                 <Widget
                   src={`${config.ownerId}/widget/Lendle.Card.CardsTable`}
@@ -220,7 +225,9 @@ return (
                     config,
                     headers: ["Asset", "Debt", "APY", ""],
                     data: debts.map((row) => {
-                      if (hideTokens.includes(row.symbol)) {return []}
+                      if (hideTokens.includes(row.symbol)) {
+                        return [];
+                      }
                       return [
                         <Widget
                           src={`${config.ownerId}/widget/Lendle.Card.TokenWrapper`}
@@ -275,7 +282,8 @@ return (
           onRequestClose: () => setShowRepayModal(false),
           data: {
             ...state.data,
-            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalAvailableLiquidityUSD:
+              yourSupplies.userTotalAvailableLiquidityUSD,
             userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
           },
           onActionSuccess,
@@ -295,7 +303,8 @@ return (
           onRequestClose: () => setShowBorrowModal(false),
           data: {
             ...state.data,
-            userTotalAvailableLiquidityUSD: yourSupplies.userTotalAvailableLiquidityUSD,
+            userTotalAvailableLiquidityUSD:
+              yourSupplies.userTotalAvailableLiquidityUSD,
             userTotalDebtUSD: yourBorrows.userTotalDebtUSD,
           },
           onActionSuccess,
