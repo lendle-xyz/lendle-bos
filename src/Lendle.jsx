@@ -798,6 +798,7 @@ function formatHealthFactor(healthFactor) {
   if (healthFactor === "∞") return healthFactor;
   if (!healthFactor || !isValid(healthFactor)) return "-";
   if (Number(healthFactor) === -1) return "∞";
+  if (Number(healthFactor) > 999) return "∞";
   return Big(healthFactor).toFixed(6, ROUND_DOWN);
 }
 
