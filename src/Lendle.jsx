@@ -22,7 +22,7 @@ const ANNUAL_EMISSION = 8056202.6244384;
 const GRAPHQL_URL =
   "https://subgraph.lendle.xyz/subgraphs/name/lendle-finance/lendle-finance-mantle";
 const GRAPHQL_URL_PRICE =
-  "https://graph.fusionx.finance/subgraphs/name/fusionx/exchange";
+  "https://graphv3.fusionx.finance/subgraphs/name/fusionx/exchange";
 const DEFAULT_LENDLE_PRICE = 0.052;
 
 // Get AAVE network config by chain id
